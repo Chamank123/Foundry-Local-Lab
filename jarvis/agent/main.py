@@ -41,6 +41,24 @@ MIME = {
 
 
 PROMPT_FILE = Path(__file__).resolve().parent / "prompt.md"
+CLAUDE_FILE = data.JARVIS_ROOT / "CLAUDE.md"
+
+
+def system_prompt() -> str:
+    """prompt.md is how it behaves; CLAUDE.md is who it is talking to.
+    Both are read fresh each turn, so editing either takes effect immediately —
+    no restart, which matters when you are tuning tone."""
+    parts = []
+    for path in (PROMPT_FILE, CLAUDE_FILE):
+        try:
+            parts.append(path.read_text(encoding="utf-8"))
+        except OSError:
+            pass
+    remembered = memory.recall(12)
+    if remembered:
+        parts.append("# What you have been asked to remember\n\n"
+                     + "\n".join(f"- {m['date']}: {m['fact']}" for m in remembered))
+    return "\n\n---\n\n".join(parts)
 
 # Foundry Local assigns a dynamic port, so the endpoint is discovered rather
 # than assumed. 5273 is the documented default and worth trying first.
@@ -258,9 +276,8 @@ class Conversation:
     def _talk(self, text: str, v) -> tuple[str, str]:
         if MODEL.available:
             try:
-                system = PROMPT_FILE.read_text(encoding="utf-8")
                 reply = MODEL.chat(
-                    [{"role": "system", "content": system}]
+                    [{"role": "system", "content": system_prompt()}]
                     + self.history()
                     + [{"role": "user", "content": text}],
                     max_tokens=180, temperature=0.5)

@@ -3,3 +3,6 @@ data/demo/
 memory/*.md
 __pycache__/
 *.pyc
+
+# keep the directory, ignore the contents
+!memory/.gitkeep
