@@ -203,25 +203,10 @@ setInterval(rotateExample, 4200);
 
 async function ask(text) {
   if (!text.trim()) return;
-  setReactor('thinking');
   $('#ask').value = '';
-  try {
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
-    const answer = await res.json();
-    state.model = answer.model;
-    renderModelBadge();
-    say(answer);
-    renderCard(text, answer);
-  } catch (err) {
-    toast('unreachable', `The server did not answer: ${err}`, { warn: true, sticky: true });
-    setReactor('error');
-  } finally {
-    if (reactorState !== 'error') setReactor('idle');
-  }
+  const answer = await askAndAnswer(text);
+  if (answer && voice.on && !voice.muted) await speakAloud(answer.spoken);
+  else if (reactorState !== 'error') setReactor(voice.on ? 'listening' : 'idle');
 }
 
 $('#ask').addEventListener('keydown', (ev) => {
@@ -363,6 +348,314 @@ async function showMemory() {
   }
 }
 
+
+/* ==========================================================================
+   Voice. Recording with MediaRecorder, transcription server-side via Scribe.
+   Never the Web Speech API: Chrome-only, ships audio to Google, and in Brave
+   it is a stub that fails silently — you talk and nothing happens.
+   ========================================================================== */
+
+// Tune the turn-taking here. These are the only numbers that decide when
+// JARVIS thinks you have stopped talking.
+const SILENCE_MS       = 900;   // quiet for this long ends your turn
+const SILENCE_LEVEL    = 0.045; // RMS below this counts as quiet
+const LEVEL_TICK_MS    = 50;    // setInterval, deliberately not rAF
+const MIN_UTTERANCE_MS = 400;   // shorter than this is a cough, not a turn
+const MAX_UTTERANCE_MS = 30000; // hard stop, so nothing records for ever
+
+const voice = {
+  on: false,          // the mic session is open
+  deaf: false,        // true while JARVIS is speaking — see below
+  muted: false,       // replies are not spoken
+  stream: null,
+  ctx: null,
+  analyser: null,
+  buffer: null,
+  recorder: null,
+  chunks: [],
+  timer: null,
+  startedAt: 0,
+  lastLoudAt: 0,
+  heardSpeech: false,
+  audio: null,
+  status: null,
+};
+
+function caption(text, cls) {
+  const node = $('#caption');
+  node.textContent = text || '';
+  node.className = cls ? `caption ${cls}` : 'caption';
+  node.hidden = !text;
+}
+
+function pickMime() {
+  const wanted = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
+  for (const m of wanted) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return '';
+}
+
+async function startVoice() {
+  if (voice.on) return stopVoice('you stopped it');
+
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    toast('no microphone support',
+          'This browser cannot record audio. Voice needs MediaRecorder.',
+          { warn: true, sticky: true });
+    setReactor('error');
+    return;
+  }
+
+  try {
+    voice.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
+  } catch (err) {
+    // A blocked microphone that produces no error is the single most
+    // confusing failure in this whole build. So: say it, loudly, on screen.
+    const why = err?.name === 'NotAllowedError'
+      ? 'The browser blocked the microphone. Click the padlock in the address bar and allow it.'
+      : err?.name === 'NotFoundError'
+        ? 'No microphone was found on this machine.'
+        : `The microphone could not start: ${err?.name || err}`;
+    toast('microphone blocked', why, { warn: true, sticky: true });
+    caption(why, 'error');
+    setReactor('error');
+    return;
+  }
+
+  voice.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = voice.ctx.createMediaStreamSource(voice.stream);
+  voice.analyser = voice.ctx.createAnalyser();
+  voice.analyser.fftSize = 1024;
+  voice.buffer = new Uint8Array(voice.analyser.fftSize);
+  source.connect(voice.analyser);   // analyser only — never back to the speakers
+
+  voice.on = true;
+  $('#btn-mic').classList.add('live');
+  beginTurn();
+
+  // setInterval, not requestAnimationFrame: rAF stops dead in a backgrounded
+  // tab, and a mic that goes silently deaf is exactly what we are avoiding.
+  voice.timer = setInterval(levelTick, LEVEL_TICK_MS);
+}
+
+function beginTurn() {
+  if (!voice.on || !voice.stream) return;
+  const mime = pickMime();
+  try {
+    voice.recorder = mime
+      ? new MediaRecorder(voice.stream, { mimeType: mime })
+      : new MediaRecorder(voice.stream);
+  } catch (err) {
+    toast('recorder failed', String(err), { warn: true, sticky: true });
+    return stopVoice('recorder failed');
+  }
+  voice.chunks = [];
+  voice.recorder.ondataavailable = (ev) => {
+    if (ev.data && ev.data.size) voice.chunks.push(ev.data);
+  };
+  voice.recorder.onstop = () => submitTurn();
+  voice.recorder.start();
+  voice.startedAt = performance.now();
+  voice.lastLoudAt = performance.now();
+  voice.heardSpeech = false;
+  setReactor('listening');
+  caption('listening…');
+}
+
+function levelTick() {
+  if (!voice.analyser) return;
+  voice.analyser.getByteTimeDomainData(voice.buffer);
+  let sum = 0;
+  for (let i = 0; i < voice.buffer.length; i++) {
+    const v = (voice.buffer[i] - 128) / 128;
+    sum += v * v;
+  }
+  const rms = Math.sqrt(sum / voice.buffer.length);
+
+  // The bars are the real microphone level, not an animation.
+  if (!voice.deaf) setReactor(reactorState === 'listening' ? 'listening' : reactorState,
+                              Math.min(1, rms * 6));
+
+  // Deaf while speaking: otherwise it transcribes its own voice through the
+  // speakers and talks to itself for ever.
+  if (voice.deaf || !voice.recorder || voice.recorder.state !== 'recording') return;
+
+  const now = performance.now();
+  if (rms >= SILENCE_LEVEL) {
+    voice.lastLoudAt = now;
+    if (!voice.heardSpeech) { voice.heardSpeech = true; caption('hearing you…', 'live'); }
+  }
+
+  const elapsed = now - voice.startedAt;
+  const quietFor = now - voice.lastLoudAt;
+  if (voice.heardSpeech && elapsed > MIN_UTTERANCE_MS && quietFor > SILENCE_MS) {
+    voice.recorder.stop();
+  } else if (elapsed > MAX_UTTERANCE_MS) {
+    caption('that was long — sending what I have', 'live');
+    voice.recorder.stop();
+  }
+}
+
+async function submitTurn() {
+  const blob = new Blob(voice.chunks, { type: voice.chunks[0]?.type || 'audio/webm' });
+  const seconds = (performance.now() - voice.startedAt) / 1000;
+  voice.chunks = [];
+  if (!voice.heardSpeech || blob.size < 1200) { if (voice.on) beginTurn(); return; }
+
+  setReactor('thinking');
+  caption('transcribing…');
+  try {
+    const res = await fetch('/api/listen', {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type, 'X-Audio-Seconds': seconds.toFixed(1) },
+      body: blob,
+    });
+    const payload = await res.json();
+    if (!res.ok || payload.error) {
+      caption(payload.error || 'Transcription failed.', 'error');
+      toast('transcription failed', payload.error || `HTTP ${res.status}`,
+            { warn: true, sticky: true });
+      setReactor('error');
+      if (voice.on && !payload.fatal) beginTurn();
+      else stopVoice('transcription unavailable');
+      return;
+    }
+    const text = (payload.text || '').trim();
+    if (!text) { caption('did not catch that', 'live'); if (voice.on) beginTurn(); return; }
+
+    caption(`“${text}”`);
+    const answer = await askAndAnswer(text);
+    if (answer && !voice.muted) await speakAloud(answer.spoken);
+  } catch (err) {
+    caption(`transcription failed: ${err}`, 'error');
+    toast('transcription failed', String(err), { warn: true, sticky: true });
+    setReactor('error');
+  } finally {
+    if (voice.on && reactorState !== 'error') beginTurn();
+  }
+}
+
+async function speakAloud(text) {
+  if (!text) return;
+  voice.deaf = true;                       // stop listening before a sound plays
+  if (voice.recorder && voice.recorder.state === 'recording') {
+    voice.recorder.onstop = null;          // this stop is not a turn
+    voice.recorder.stop();
+  }
+  setReactor('speaking');
+  try {
+    const res = await fetch('/api/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      caption(err.error || 'Speech failed.', 'error');
+      toast('speech failed', err.error || `HTTP ${res.status}`,
+            { warn: true, sticky: true });
+      return;
+    }
+    const url = URL.createObjectURL(await res.blob());
+    await new Promise((resolve) => {
+      voice.audio = new Audio(url);
+      voice.audio.onended = voice.audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      voice.audio.play().catch(() => resolve());
+    });
+  } finally {
+    voice.audio = null;
+    voice.deaf = false;                    // ears back on, only now
+    setReactor(voice.on ? 'listening' : 'idle');
+  }
+}
+
+/* Barge-in is an explicit action: the mic button, Space, or Esc. */
+function bargeIn() {
+  if (voice.audio) {
+    voice.audio.pause();
+    voice.audio.onended?.();
+    voice.audio = null;
+  }
+  voice.deaf = false;
+  caption('go on', 'live');
+  if (voice.on) beginTurn(); else setReactor('idle');
+}
+
+function stopVoice(why) {
+  voice.on = false;
+  clearInterval(voice.timer);
+  voice.timer = null;
+  if (voice.recorder && voice.recorder.state !== 'inactive') {
+    voice.recorder.onstop = null;
+    voice.recorder.stop();
+  }
+  voice.stream?.getTracks().forEach((t) => t.stop());
+  voice.ctx?.close().catch(() => {});
+  voice.stream = voice.ctx = voice.analyser = voice.recorder = null;
+  $('#btn-mic').classList.remove('live');
+  caption(why ? `microphone off — ${why}` : '');
+  setReactor(reactorState === 'error' ? 'error' : 'idle');
+}
+
+/* One place that asks and renders, shared by typing and by speaking. */
+async function askAndAnswer(text) {
+  setReactor('thinking');
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const answer = await res.json();
+    state.model = answer.model;
+    renderModelBadge();
+    say(answer);
+    renderCard(text, answer);
+    return answer;
+  } catch (err) {
+    toast('unreachable', `The server did not answer: ${err}`,
+          { warn: true, sticky: true });
+    setReactor('error');
+    return null;
+  }
+}
+
+$('#btn-mic').onclick = () => (voice.audio ? bargeIn() : startVoice());
+$('#btn-mute').onclick = (ev) => {
+  voice.muted = !voice.muted;
+  ev.currentTarget.classList.toggle('live', voice.muted);
+  ev.currentTarget.textContent = voice.muted ? '🔇' : '🔊';
+  toast('voice', voice.muted ? 'Replies stay on screen.' : 'Replies spoken again.');
+};
+
+window.addEventListener('keydown', (ev) => {
+  if (ev.target.tagName === 'INPUT') return;
+  if (ev.code === 'Space') { ev.preventDefault(); bargeIn(); }
+  if (ev.key === 'Escape' && voice.audio) bargeIn();
+});
+
+async function loadVoiceStatus() {
+  try {
+    voice.status = await (await fetch('/api/voice')).json();
+  } catch { return; }
+  const ok = voice.status.tts && voice.status.stt;
+  $('#btn-mic').disabled = !ok;
+  $('#btn-mute').disabled = !ok;
+  if (!ok) {
+    $('#btn-mic').title = voice.status.reason || 'Voice unavailable';
+    // Never let voice look available when it is not.
+    toast('voice unavailable', voice.status.reason, { warn: true, sticky: true });
+  } else {
+    $('#btn-mic').title = `Talk — ${voice.status.voice_name || voice.status.voice}`;
+  }
+}
+
 /* -------------------------------------------------------------- viewbar --- */
 $('#btn-fit').onclick = () => graph.fit(true);
 $('#btn-labels').onclick = (ev) => {
@@ -396,6 +689,7 @@ async function boot() {
     renderTypes(data.counts);
     state.model = status.model;
     renderModelBadge();
+    loadVoiceStatus();
 
     // Degrade loudly: anything the indexer could not do gets said on screen.
     if (status.warnings?.length) {

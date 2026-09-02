@@ -23,9 +23,9 @@ from pathlib import Path
 
 if __package__ in (None, ""):  # allow `python3 agent/main.py`
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from agent import data, memory, tools, vault  # type: ignore
+    from agent import data, memory, tools, vault, voice  # type: ignore
 else:
-    from . import data, memory, tools, vault
+    from . import data, memory, tools, vault, voice
 
 UI_DIR = data.JARVIS_ROOT / "ui"
 PORT = int(os.environ.get("JARVIS_PORT", "8720"))
@@ -379,6 +379,13 @@ class Handler(BaseHTTPRequestHandler):
         elif route == "/api/model":
             MODEL.discover()
             self._json(MODEL.status())
+        elif route == "/api/voice":
+            self._json(voice.status())
+        elif route == "/api/voices":
+            try:
+                self._json({"voices": voice.voices(refresh=True)})
+            except voice.VoiceError as exc:
+                self._json({"voices": [], "error": str(exc)}, 200)
         else:
             self._json({"error": "not found", "path": route}, 404)
 
@@ -390,6 +397,10 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
             length = 0
+
+        if route == "/api/listen":
+            self._listen(length)
+            return
         if length > 64_000:
             self._json({"error": "payload too large"}, 413)
             return
@@ -399,7 +410,16 @@ class Handler(BaseHTTPRequestHandler):
             self._json({"error": "bad json"}, 400)
             return
 
-        if route == "/api/ask":
+        if route == "/api/speak":
+            # Text in, mp3 out. The key never crosses this boundary.
+            try:
+                audio = voice.speak(str(body.get("text", "")))
+            except voice.VoiceError as exc:
+                self._json({"error": str(exc), "fatal": exc.fatal,
+                            "spend": voice.SPEND.as_json()}, 503)
+                return
+            self._send(200, audio, "audio/mpeg")
+        elif route == "/api/ask":
             try:
                 self._json(CONVERSATION.ask(str(body.get("text", ""))))
             except Exception as exc:                 # degrade loudly
@@ -412,6 +432,25 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._json({"error": "not found", "path": route}, 404)
 
+    def _listen(self, length: int) -> None:
+        """Raw recorded audio in, transcript out. Never the browser's Web Speech
+        API: that is Chrome-only, ships audio to Google, and in Brave fails
+        silently — the worst failure mode there is."""
+        if length <= 0 or length > voice.MAX_AUDIO_BYTES:
+            self._json({"error": "no audio, or too much of it"}, 400)
+            return
+        mime = self.headers.get("Content-Type", "audio/webm").split(";")[0]
+        try:
+            seconds = float(self.headers.get("X-Audio-Seconds", "0") or 0)
+        except ValueError:
+            seconds = 0.0
+        blob = self.rfile.read(length)
+        try:
+            self._json(voice.listen(blob, mime=mime, seconds=seconds))
+        except voice.VoiceError as exc:
+            self._json({"error": str(exc), "fatal": exc.fatal,
+                        "spend": voice.SPEND.as_json()}, 503)
+
     def _status(self) -> dict:
         v = INDEX.get()
         return {
@@ -423,6 +462,7 @@ class Handler(BaseHTTPRequestHandler):
             "built_at": INDEX.built_at,
             "port": PORT,
             "model": MODEL.status(),
+            "voice": voice.status(),
             "web": os.environ.get("JARVIS_WEB", "0") in ("1", "true", "yes"),
         }
 
