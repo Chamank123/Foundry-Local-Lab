@@ -69,6 +69,14 @@ html, body {
   color: var(--amber); font-size: 9px; letter-spacing: 0.16em;
 }
 #mode-badge.real { border-color: rgba(88, 219, 230, 0.4); color: var(--accent); }
+#model-badge {
+  margin-left: 2px; padding: 2px 7px;
+  border: 1px solid rgba(88, 219, 230, 0.35); border-radius: 5px;
+  color: var(--accent); font-size: 9px; letter-spacing: 0.16em;
+}
+/* A missing model is stated, never hidden: keyword routing must not be
+   mistaken for the model talking. */
+#model-badge.missing { border-color: rgba(244, 115, 159, 0.5); color: #f4739f; }
 
 /* left ------------------------------------------------------------------- */
 #left { top: 62px; left: 22px; width: 336px; background: none; border: none; }
@@ -78,6 +86,9 @@ html, body {
   background: var(--panel); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 14px 16px;
   min-height: 74px; margin-bottom: 22px;
+  /* A long answer scrolls inside its own panel rather than growing the
+     column and pushing Top Hubs off the bottom of the screen. */
+  max-height: 52vh; overflow-y: auto;
 }
 #inspector .hint { color: var(--text-dim); font-size: 12px; }
 #inspector h2 {
@@ -200,6 +211,14 @@ html, body {
   font-family: var(--mono); font-size: 9.5px; letter-spacing: var(--track);
   text-transform: uppercase; color: var(--text-faint);
 }
+
+.kv { display: flex; gap: 10px; font-size: 11.5px; padding: 2px 0; }
+.kv-k { font-family: var(--mono); font-size: 10px; color: var(--text-faint);
+        min-width: 62px; letter-spacing: 0.06em; }
+.kv-v { color: var(--text-dim); }
+.qualifier.flag { border-left-color: #f4739f; color: rgba(244, 115, 159, 0.9); }
+#inspector .meta.qualifier, .meta { font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.06em; color: var(--text-faint); }
 
 /* results list inside inspector ------------------------------------------ */
 .result { padding: 7px 8px; border-radius: 7px; cursor: pointer; }

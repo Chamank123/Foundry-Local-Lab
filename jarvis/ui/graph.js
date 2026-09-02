@@ -5,18 +5,25 @@
  * cost stays near-linear in node count rather than quadratic.
  */
 
+/* Colour carries the type, so it is the only strong colour on the page.
+   Anchors (the five papers) are green; everything else reads against them. */
 export const TYPE_COLOURS = {
-  call:     '#4a86e8',
-  note:     '#e6e8ea',
-  concept:  '#f5c542',
-  project:  '#57c7f5',
-  person:   '#b18cf0',
-  client:   '#3fcf7f',
-  invoice:  '#f4739f',
-  proposal: '#f0a04b',
-  sop:      '#ef7a3d',
-  brief:    '#9aa3ad',
-  campaign: '#7d8590',
+  paper:       '#3fcf7f',   // the five Part I papers — the anchors
+  lecture:     '#4a86e8',
+  supervision: '#f0a04b',
+  concept:     '#f5c542',
+  note:        '#e6e8ea',
+  person:      '#b18cf0',
+  application: '#f4739f',
+  message:     '#57c7f5',
+  project:     '#2fd4c4',
+  reading:     '#9aa3ad',
+  log:         '#6b7280',
+  // Kept so a real vault organised around work rather than a course still
+  // gets sensible colours rather than a wall of grey.
+  client:   '#3fcf7f', call: '#4a86e8', invoice: '#f4739f',
+  proposal: '#f0a04b', sop: '#ef7a3d', brief: '#9aa3ad', campaign: '#7d8590',
+  module:   '#3fcf7f', assignment: '#f0a04b', shift: '#2fd4c4',
 };
 const FALLBACK = '#7d8590';
 export const colourFor = (t) => TYPE_COLOURS[t] || FALLBACK;

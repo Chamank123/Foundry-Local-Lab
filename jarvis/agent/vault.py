@@ -75,7 +75,10 @@ class Node:
     degree: int = 0
 
     def excerpt(self, limit: int = 240) -> str:
-        body = " ".join(self.text.split())
+        # Drop the leading H1: it repeats the title, which is already shown
+        # right above the excerpt everywhere this is used.
+        body = re.sub(r"^\s*#\s+.*$", "", self.text, count=1, flags=re.M)
+        body = " ".join(body.split())
         return body[:limit] + ("…" if len(body) > limit else "")
 
     def card(self) -> dict:
@@ -324,7 +327,7 @@ def build(source: data.Source | None = None) -> Vault:
         for path in sorted(root.rglob("*")):
             if any(part in SKIP_DIRS for part in path.parts):
                 continue
-            if not path.is_file():
+            if not path.is_file() or path.name.startswith("."):
                 continue
             ext = path.suffix.lower()
             if ext not in TEXT_EXT and ext not in PDF_EXT:

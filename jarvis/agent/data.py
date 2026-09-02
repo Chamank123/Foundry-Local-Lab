@@ -15,6 +15,7 @@ writing under any of them. Writes belong to memory.py and go to memory/ alone.
 
 from __future__ import annotations
 
+import datetime
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -120,6 +121,22 @@ def ensure_demo(src: Source | None = None) -> None:
     module.build()
 
 
+def today() -> datetime.date:
+    """The date the assistant should reason from.
+
+    In demo mode that is the date the fixtures were generated around, so a
+    recorded demo keeps making sense a month later. In real mode it is simply
+    today. Nothing else in the codebase calls date.today() directly.
+    """
+    if is_demo():
+        anchor = DEMO_DIR / ".anchor"
+        try:
+            return datetime.date.fromisoformat(anchor.read_text().strip())
+        except (OSError, ValueError):
+            pass
+    return datetime.date.today()
+
+
 def describe() -> dict:
     """A summary the UI can show without knowing anything about paths."""
     src = source()
@@ -128,4 +145,5 @@ def describe() -> dict:
         "demo": src.mode == "demo",
         "roots": [str(p) for p in src.paths],
         "warnings": list(src.warnings),
+        "today": today().isoformat(),
     }

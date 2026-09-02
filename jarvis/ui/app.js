@@ -11,12 +11,13 @@ const el = (tag, cls, text) => {
 };
 
 const EXAMPLES = [
-  '"brief me"', '"what did I miss this week?"', '"who owes me money?"',
-  '"what is the margin model?"', '"plan my day"', '"what changed on Pennine?"',
+  '"brief me"', '"what did I miss this week?"', '"what is due tomorrow"',
+  '"do supervision marks count?"', '"plan my day"', '"who emailed me"',
+  '"remember that I revise better in the morning"',
 ];
 
 const graph = new Graph($('#graph'));
-const state = { data: null, status: null, hidden: new Set(), lastPath: null };
+const state = { data: null, status: null, model: null, hidden: new Set() };
 
 /* --------------------------------------------------------------- toast --- */
 let toastTimer = null;
@@ -200,39 +201,165 @@ function rotateExample() {
 rotateExample();
 setInterval(rotateExample, 4200);
 
-$('#ask').addEventListener('keydown', async (ev) => {
-  if (ev.key !== 'Enter') return;
-  const query = ev.target.value.trim();
-  if (!query) return;
+async function ask(text) {
+  if (!text.trim()) return;
   setReactor('thinking');
+  $('#ask').value = '';
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-    const { hits } = await res.json();
-    if (hits.length) focusNode(hits[0].id);   // moves the camera to the top hit
-    renderResults(hits, query);               // then the list replaces the panel
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const answer = await res.json();
+    state.model = answer.model;
+    renderModelBadge();
+    say(answer);
+    renderCard(text, answer);
   } catch (err) {
-    toast('search failed', String(err), { warn: true });
+    toast('unreachable', `The server did not answer: ${err}`, { warn: true, sticky: true });
+    setReactor('error');
   } finally {
-    setReactor('idle');
+    if (reactorState !== 'error') setReactor('idle');
   }
-});
+}
 
-// Focusing the top hit moves the camera; the results list then owns the panel.
-function renderResults(hits, query) {
+$('#ask').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter') ask(ev.target.value);
+});
+$('#btn-brief').onclick = () => ask('brief me');
+$('#btn-plan').onclick = () => ask('what should I do today');
+$('#btn-memory').onclick = showMemory;
+
+/* The spoken line goes to the toast. It is deliberately not the card text:
+   one is what you would hear, the other is what you would read. */
+function say(answer) {
+  const engine = answer.engine === 'tool' ? answer.tool
+    : answer.engine === 'model' ? 'jarvis'
+    : answer.engine;
+  toast(engine, answer.spoken, {
+    warn: answer.engine === 'fallback' || answer.engine === 'error',
+    sticky: (answer.warnings || []).length > 0,
+  });
+}
+
+function renderModelBadge() {
+  const badge = $('#model-badge');
+  const m = state.model;
+  if (!m) { badge.hidden = true; return; }
+  badge.hidden = false;
+  badge.classList.toggle('missing', !m.available);
+  badge.textContent = m.available ? m.model : 'no model · keyword routing';
+  badge.title = m.available
+    ? `${m.model} at ${m.endpoint}`
+    : `${m.reason}\nRouting is keyword scoring against your files — not a model.`;
+}
+
+/* ------------------------------------------------------------------ cards --- */
+function kv(label, value) {
+  const row = el('div', 'kv');
+  row.append(el('span', 'kv-k', label), el('span', 'kv-v', String(value)));
+  return row;
+}
+
+function pill(node, text, cls) {
+  if (!text) return;
+  node.append(el('div', cls || 'qualifier', text));
+}
+
+function fileRow(box, item, label) {
+  const row = el('div', 'result');
+  row.append(el('div', 't', label));
+  if (item.excerpt) row.append(el('div', 'e', item.excerpt));
+  if (item.file) row.append(el('div', 'e', item.file));
+  if (item.id) row.onclick = () => focusNode(item.id);
+  // A qualifier never gets separated from the number it qualifies.
+  if (item.qualifier) row.append(el('div', 'qualifier', item.qualifier));
+  if (item.flag) row.append(el('div', 'qualifier flag', `⚠ ${item.flag}`));
+  box.append(row);
+}
+
+function renderCard(question, answer) {
   const box = $('#inspector');
   box.replaceChildren();
-  // This is keyword matching, not a model. Never let it read as conversation.
-  box.append(el('div', 'qualifier',
-    `Keyword search for “${query}” — no model is wired up yet (step 3).`));
-  if (!hits.length) {
-    box.append(el('p', 'hint', 'Nothing in the index matches that.'));
-    return;
+  const card = answer.card || {};
+
+  const head = el('div', 'meta');
+  head.textContent = `${answer.tool || 'conversation'} · ${answer.engine}`
+    + (answer.routed_by ? ` · routed by ${answer.routed_by}` : '');
+  box.append(head);
+
+  if (answer.engine === 'fallback') {
+    pill(box, 'No model is loaded. This was decided by scoring your question '
+             + 'against your files — keyword matching, not a model.');
   }
-  for (const hit of hits) {
-    const row = el('div', 'result');
-    row.append(el('div', 't', hit.title), el('div', 'e', hit.excerpt));
-    row.onclick = () => focusNode(hit.id);
-    box.append(row);
+  for (const w of answer.warnings || []) pill(box, `⚠ ${w}`);
+
+  if (card.hits) {
+    box.append(el('span', 'label', `${card.hits.length} files`));
+    card.hits.forEach((h) => fileRow(box, h, h.title));
+  } else if (card.messages) {
+    box.append(el('span', 'label', `${card.unread} unread of ${card.total}`));
+    card.messages.forEach((m) => {
+      const row = el('div', 'result');
+      row.append(el('div', 't', `${m.from} — ${m.subject}`));
+      row.append(el('div', 'e', m.excerpt));
+      row.append(el('div', 'e', `${m.received} · ${m.unread ? 'unread' : 'read'} · ${m.known_note}`));
+      if (m.flag) row.append(el('div', 'qualifier flag', `⚠ ${m.flag}`));
+      row.onclick = () => focusNode(m.id);
+      box.append(row);
+    });
+    pill(box, card.note, 'meta');
+  } else if (card.items) {
+    box.append(el('span', 'label', 'Plan'));
+    card.items.forEach((it, i) => fileRow(box, it, `${i + 1}. ${it.what} — ${it.why}`));
+    pill(box, card.rule, 'meta');
+  } else if (card.due || card.slipped || card.closing) {
+    for (const [key, label] of [['slipped', 'Slipped'], ['due', 'Due'],
+                                ['closing', 'Closing'], ['unread', 'Unread']]) {
+      const rows = card[key] || [];
+      if (!rows.length) continue;
+      box.append(el('span', 'label', `${label} (${rows.length})`));
+      rows.forEach((r) => fileRow(box, r,
+        r.title ? `${r.title} — ${r.when || ''}` : `${r.from} — ${r.subject}`));
+    }
+    pill(box, card.note, 'meta');
+  } else if (card.status === 'written') {
+    box.append(el('span', 'label', 'Written'));
+    box.append(kv('file', card.file), kv('date', card.date));
+    box.append(el('div', 'excerpt', card.fact));
+    pill(box, card.note, 'meta');
+  } else if (card.status === 'disabled' || card.status === 'not implemented') {
+    box.append(el('span', 'label', 'Web research'));
+    box.append(kv('status', card.status), kv('reason', card.reason || card.note || ''));
+    pill(box, card.how || card.note);
+    (card.local_context || []).forEach((c) => fileRow(box, c, c.title));
+  } else if (Object.keys(card).length) {
+    box.append(el('div', 'excerpt', JSON.stringify(card, null, 2)));
+  } else {
+    box.append(el('p', 'hint', answer.spoken));
+  }
+}
+
+async function showMemory() {
+  setReactor('thinking');
+  try {
+    const { remembered } = await (await fetch('/api/memory')).json();
+    const box = $('#inspector');
+    box.replaceChildren();
+    box.append(el('div', 'meta', 'memory · the only place anything is written'));
+    if (!remembered.length) {
+      box.append(el('p', 'hint', 'Nothing remembered yet.'));
+    } else {
+      remembered.forEach((m) => {
+        const row = el('div', 'result');
+        row.append(el('div', 't', m.fact), el('div', 'e', `${m.date} · ${m.file}`));
+        box.append(row);
+      });
+    }
+    toast('memory', `${remembered.length} remembered.`);
+  } finally {
+    setReactor('idle');
   }
 }
 
@@ -267,6 +394,8 @@ async function boot() {
     graph.setData(data);
     renderHubs(data.hubs);
     renderTypes(data.counts);
+    state.model = status.model;
+    renderModelBadge();
 
     // Degrade loudly: anything the indexer could not do gets said on screen.
     if (status.warnings?.length) {
