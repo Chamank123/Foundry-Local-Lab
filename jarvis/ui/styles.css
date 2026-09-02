@@ -1,0 +1,212 @@
+/* JARVIS — near-black ground, floating translucent panels, one cyan accent
+   used almost nowhere. Colour work belongs to the graph, not the chrome. */
+
+:root {
+  --bg:            #08090b;
+  --panel:         rgba(255, 255, 255, 0.024);
+  --panel-solid:   #0e1014;
+  --border:        rgba(255, 255, 255, 0.075);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text:          rgba(255, 255, 255, 0.90);
+  --text-dim:      rgba(255, 255, 255, 0.44);
+  --text-faint:    rgba(255, 255, 255, 0.26);
+  --accent:        #58dbe6;
+  --accent-dim:    rgba(88, 219, 230, 0.28);
+  --amber:         #f2a93b;
+  --radius:        12px;
+  --label:         10px;
+  --track:         0.15em;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: var(--sans); font-size: 13px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#graph { position: fixed; inset: 0; display: block; cursor: grab; }
+#graph.grabbing { cursor: grabbing; }
+#graph.pointing { cursor: pointer; }
+
+/* ------------------------------------------------------------- chrome --- */
+.panel {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* wordmark ---------------------------------------------------------------- */
+#brand {
+  position: fixed; top: 22px; left: 26px;
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--text); z-index: 5;
+}
+#brand .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px var(--accent-dim);
+}
+#mode-badge {
+  margin-left: 6px; padding: 2px 7px;
+  border: 1px solid rgba(242, 169, 59, 0.45); border-radius: 5px;
+  color: var(--amber); font-size: 9px; letter-spacing: 0.16em;
+}
+#mode-badge.real { border-color: rgba(88, 219, 230, 0.4); color: var(--accent); }
+
+/* left ------------------------------------------------------------------- */
+#left { top: 62px; left: 22px; width: 336px; background: none; border: none; }
+#left > .label { display: block; margin: 0 4px 9px; }
+
+#inspector {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  min-height: 74px; margin-bottom: 22px;
+}
+#inspector .hint { color: var(--text-dim); font-size: 12px; }
+#inspector h2 {
+  margin: 0 0 3px; font-size: 14px; font-weight: 550; letter-spacing: -0.01em;
+}
+#inspector .meta {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+  color: var(--text-faint); margin-bottom: 10px;
+}
+#inspector .excerpt {
+  color: var(--text-dim); font-size: 12px; max-height: 132px;
+  overflow-y: auto; white-space: pre-wrap; margin-bottom: 12px;
+}
+#inspector .front {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 12px;
+  font-size: 11px; margin-bottom: 12px;
+}
+#inspector .front dt { color: var(--text-faint); font-family: var(--mono); font-size: 10px; }
+#inspector .front dd { margin: 0; color: var(--text-dim); }
+#inspector .qualifier {
+  border-left: 2px solid var(--amber); padding: 5px 0 5px 9px;
+  color: rgba(242, 169, 59, 0.85); font-size: 11.5px; margin-bottom: 12px;
+}
+
+.row-list { list-style: none; margin: 0; padding: 0; }
+.row-list li {
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 8px; border-radius: 7px; cursor: pointer;
+  font-size: 12px; color: var(--text-dim);
+}
+.row-list li:hover { background: rgba(255, 255, 255, 0.045); color: var(--text); }
+.row-list li.on { color: var(--text); }
+.row-list .swatch { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.row-list .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-list .count { font-family: var(--mono); font-size: 10px; color: var(--text-faint); }
+
+#hubs-panel { background: var(--panel); border: 1px solid var(--border);
+              border-radius: var(--radius); padding: 8px; }
+#help {
+  margin: 14px 6px 0; font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.16);
+}
+
+/* right ------------------------------------------------------------------ */
+#right { top: 62px; right: 22px; width: 244px; background: none; border: none; }
+#right > .label { display: block; margin: 0 4px 9px; }
+#filters { background: var(--panel); border: 1px solid var(--border);
+           border-radius: var(--radius); padding: 8px; }
+#filters li.off { opacity: 0.3; }
+
+#reactor-wrap {
+  margin-top: 26px; display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+}
+#reactor { display: block; }
+#reactor-state {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: var(--track);
+  text-transform: uppercase; color: var(--text-faint);
+}
+
+/* top centre ------------------------------------------------------------- */
+#viewbar {
+  position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 999px; padding: 5px 7px; z-index: 5;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.pill {
+  border: 1px solid transparent; background: none; color: var(--text-dim);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+  padding: 4px 11px; border-radius: 999px; cursor: pointer;
+}
+.pill:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+.pill.on { color: var(--accent); border-color: var(--accent-dim); }
+
+/* bottom ----------------------------------------------------------------- */
+#ask-bar {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; z-index: 5;
+}
+#ask-shell {
+  display: flex; align-items: center; gap: 12px;
+  width: 600px; padding: 11px 18px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+#ask-shell:focus-within { border-color: var(--accent-dim); }
+#ask-shell .label { flex: none; }
+#ask {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--sans); font-size: 13px;
+}
+#ask::placeholder { color: var(--text-faint); font-style: italic; }
+.iconbtn {
+  width: 38px; height: 38px; flex: none;
+  display: grid; place-items: center;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 9px; color: var(--text-dim); cursor: pointer;
+  font-size: 14px; backdrop-filter: blur(14px);
+}
+.iconbtn:hover { color: var(--text); border-color: var(--border-strong); }
+.iconbtn[disabled] { opacity: 0.34; cursor: not-allowed; }
+
+/* toast ------------------------------------------------------------------ */
+#toast {
+  position: fixed; right: 22px; bottom: 96px; width: 330px;
+  padding: 14px 16px; border-radius: var(--radius);
+  background: rgba(14, 16, 20, 0.86); border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  box-shadow: 0 0 30px rgba(88, 219, 230, 0.07);
+  backdrop-filter: blur(14px); font-size: 12.5px; line-height: 1.45;
+  z-index: 6; display: none;
+}
+#toast.show { display: block; }
+#toast.warn { border-left-color: var(--amber); box-shadow: none; }
+#toast .k {
+  display: block; margin-bottom: 5px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: var(--track);
+  text-transform: uppercase; color: var(--text-faint);
+}
+
+/* results list inside inspector ------------------------------------------ */
+.result { padding: 7px 8px; border-radius: 7px; cursor: pointer; }
+.result:hover { background: rgba(255, 255, 255, 0.045); }
+.result .t { font-size: 12px; color: var(--text); }
+.result .e { font-size: 11px; color: var(--text-faint);
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.09); border-radius: 3px; }

@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><title>booting</title>
+<style>html,body{margin:0;height:100%;background:#08090b;overflow:hidden}canvas{display:block}</style>
+</head><body><canvas id="graph"></canvas>
+<script type="module">
+/* Test harness. rAF does not tick in headless Chromium, so step the
+   simulation synchronously and draw one frame. Not part of the app. */
+import { Graph } from '/ui/graph.js';
+const g = new Graph(document.getElementById('graph'));
+g._frame = () => {};                       // stop the rAF loop owning the canvas
+const data = await (await fetch('/api/graph')).json();
+
+/* ?dup=N clones the vault N times to check the spatial grid holds up at the
+   node counts where SVG and naive O(n^2) repulsion fall over. */
+const dup = Number(new URLSearchParams(location.search).get('dup') || 1);
+if (dup > 1) {
+  const nodes = [], edges = [];
+  for (let c = 0; c < dup; c++) {
+    for (const n of data.nodes) nodes.push({ ...n, id: `${c}:${n.id}` });
+    for (const e of data.edges) edges.push({ s: `${c}:${e.s}`, t: `${c}:${e.t}` });
+    if (c > 0) edges.push({ s: `0:${data.nodes[0].id}`, t: `${c}:${data.nodes[0].id}` });
+  }
+  data.nodes = nodes; data.edges = edges;
+}
+const t0 = performance.now();
+g.setData(data);
+const tSetup = performance.now() - t0;
+const STEPS = Number(new URLSearchParams(location.search).get('steps') || 900);
+const t1 = performance.now();
+for (let i = 0; i < STEPS; i++) g._tick();
+const perTick = (performance.now() - t1) / STEPS;
+g.fit(false);
+
+/* Exercise the interaction states, which a screenshot of an idle page
+   cannot prove: hit-testing, hover dimming, focus, and a traced path. */
+const mode = new URLSearchParams(location.search).get('mode') || 'idle';
+const byTitle = (t) => g.nodes.find((n) => n.title === t);
+let report = '';
+if (mode === 'hover') {
+  const hub = [...g.nodes].sort((a, b) => b.degree - a.degree)[0];
+  // hit-test through screen coordinates, the same path a real mouse takes
+  const sx = hub.x * g.view.k + g.view.x, sy = hub.y * g.view.k + g.view.y;
+  const hit = g._at(sx, sy);
+  g.hover = hit;
+  report = `hover=${hit ? hit.title : 'MISS'} lit=${g._highlight()?.size}`;
+} else if (mode === 'path') {
+  const a = byTitle('Ashgrove Dental'), b = byTitle('Saltbox Coffee');
+  const path = g.shortestPath(a.id, b.id);
+  g.focus = a.id;
+  g.pathIds = new Set(path);
+  report = `path=${path.map((id) => g.byId.get(id).title).join(' -> ')}`;
+} else if (mode === 'filter') {
+  g.setHidden(new Set(['call', 'note']));
+  for (let i = 0; i < 600; i++) g._tick();
+  g.fit(false);
+  report = `visible=${g.nodes.filter((n) => g.visible(n)).length}/${g.nodes.length}`;
+}
+g._draw(performance.now());
+const shown = g.nodes.filter((n) => g.visible(n));
+const xs = shown.map((n) => n.x), ys = shown.map((n) => n.y);
+const world = [Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)];
+const st = g._stage();
+const t2 = performance.now();
+g._draw(performance.now());
+const drawMs = performance.now() - t2;
+document.title = (dup > 1)
+  ? `nodes=${g.nodes.length} edges=${g.edges.length} setup=${tSetup.toFixed(0)}ms `
+    + `tick=${perTick.toFixed(2)}ms draw=${drawMs.toFixed(1)}ms fps_ceiling=${(1000/(perTick+drawMs)).toFixed(0)}`
+  : report || `steps=${STEPS} alpha=${g.alpha.toFixed(5)} world=${world.map(Math.round).join('x')} `
+  + `stage=${st.w}x${st.h} k=${g.view.k.toFixed(3)} onscreen=${Math.round(world[0]*g.view.k)}x${Math.round(world[1]*g.view.k)}`;
+</script></body></html>

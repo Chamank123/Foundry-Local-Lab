@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JARVIS</title>
+  <link rel="stylesheet" href="/ui/styles.css">
+</head>
+<body>
+  <canvas id="graph"></canvas>
+
+  <div id="brand">
+    <span class="dot"></span>JARVIS
+    <span id="mode-badge">demo</span>
+  </div>
+
+  <div id="viewbar">
+    <button class="pill" id="btn-fit">⊙ fit</button>
+    <button class="pill on" id="btn-labels">Aa</button>
+    <button class="pill" id="btn-dim">◐</button>
+  </div>
+
+  <section class="panel" id="left">
+    <span class="label">Inspector</span>
+    <div id="inspector">
+      <p class="hint">Click a node to focus it. Shift-click a second to trace the path.</p>
+    </div>
+    <span class="label">Top hubs</span>
+    <div id="hubs-panel"><ul class="row-list" id="hubs"></ul></div>
+    <p id="help">drag · scroll to zoom · shift-click to trace</p>
+  </section>
+
+  <section class="panel" id="right">
+    <span class="label">Filter</span>
+    <div id="filters"><ul class="row-list" id="types"></ul></div>
+    <div id="reactor-wrap">
+      <canvas id="reactor" width="150" height="150"></canvas>
+      <span id="reactor-state">idle</span>
+    </div>
+  </section>
+
+  <div id="ask-bar">
+    <div id="ask-shell">
+      <span class="label">Ask</span>
+      <input id="ask" autocomplete="off" spellcheck="false">
+    </div>
+    <button class="iconbtn" id="btn-mic" disabled title="Voice arrives in step 4">🎙</button>
+    <button class="iconbtn" id="btn-mute" disabled title="Voice arrives in step 4">🔇</button>
+    <button class="iconbtn" id="btn-brief" disabled title="Tools arrive in step 3">🔔</button>
+    <button class="iconbtn" id="btn-plan" disabled title="Tools arrive in step 3">💡</button>
+    <button class="iconbtn" id="btn-memory" disabled title="Memory arrives in step 5">▤</button>
+  </div>
+
+  <div id="toast"><span class="k"></span><span class="b"></span></div>
+
+  <script type="module" src="/ui/app.js"></script>
+</body>
+</html>
