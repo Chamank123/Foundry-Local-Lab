@@ -41,24 +41,38 @@ WEIGHT_KEYS = ("acc_w", "acc_b", "l1_w", "l1_b", "out_w", "out_b")
 # PyTorch model (used on the training machine: Colab / Kaggle T4).
 # Imported lazily so this module is usable for weight I/O without torch.
 # ----------------------------------------------------------------------------
-def build_model():
+def build_model(out_scale=1.0):
+    """Build the network. `out_scale` is a FIXED (non-trainable) multiplier on
+    the output head.
+
+    With out_scale=1 the head must itself grow to tens of centipawns per unit to
+    express a real evaluation, while the training gradient reaching it is divided
+    by the loss scale K=400. The net's cheapest route to magnitude is then to
+    saturate its clipped [0,1] units, which is what the pilot checkpoints do.
+    Factoring a fixed constant out of the head keeps the trainable weights O(1)
+    and leaves the FUNCTION CLASS UNCHANGED: export folds the constant into
+    out_w/out_b, so the exported file and the runtime socket are byte-identical
+    in layout and the model still outputs raw centipawns.
+    """
     import torch
     import torch.nn as nn
 
     class NNUE(nn.Module):
-        def __init__(self, n_features=N_FEATURES, h0=H0, h1=H1):
+        def __init__(self, n_features=N_FEATURES, h0=H0, h1=H1, out_scale=1.0):
             super().__init__()
             self.acc = nn.Linear(n_features, h0)   # accumulator
             self.l1 = nn.Linear(h0, h1)
             self.out = nn.Linear(h1, 1)
+            self.out_scale = float(out_scale)
 
         def forward(self, x):
             # x: (batch, 780) dense 0/1 features
             a = torch.clamp(self.acc(x), 0.0, 1.0)   # clipped ReLU
             h = torch.clamp(self.l1(a), 0.0, 1.0)
-            return self.out(h).squeeze(-1)           # centipawns, mover-relative
+            # centipawns, mover-relative
+            return self.out(h).squeeze(-1) * self.out_scale
 
-    return NNUE()
+    return NNUE(out_scale=out_scale)
 
 
 def _atomic_savez(path, arrays):
@@ -84,13 +98,23 @@ def _atomic_savez(path, arrays):
 def export_weights(model, path, metadata=None):
     """Save a trained torch model to a runtime-ready .npz."""
     sd = model.state_dict()
+    # Fold the fixed output multiplier into the exported head so the runtime
+    # stays a plain linear layer and keeps emitting raw centipawns.
+    out_scale = float(getattr(model, "out_scale", 1.0))
     arrays = {
-        "acc_w": sd["acc.weight"].detach().cpu().numpy().T.astype(np.float32),  # (780,256)
+        # ascontiguousarray is REQUIRED, not cosmetic: .T yields an F-ordered
+        # view, np.savez records that order, and np.load hands it back F-ordered.
+        # nn_forward indexes acc_w[idx[k]] expecting a contiguous row, and numba
+        # types an F-ordered array differently from a C-ordered one -- so an
+        # F-ordered acc_w both defeats the row-access design and forces a fresh
+        # compilation of the whole search on first use, on the clock.
+        "acc_w": np.ascontiguousarray(
+            sd["acc.weight"].detach().cpu().numpy().T, dtype=np.float32),  # (780,256)
         "acc_b": sd["acc.bias"].detach().cpu().numpy().astype(np.float32),
         "l1_w":  sd["l1.weight"].detach().cpu().numpy().astype(np.float32),      # (32,256)
         "l1_b":  sd["l1.bias"].detach().cpu().numpy().astype(np.float32),
-        "out_w": sd["out.weight"].detach().cpu().numpy().astype(np.float32),     # (1,32)
-        "out_b": sd["out.bias"].detach().cpu().numpy().astype(np.float32),
+        "out_w": (sd["out.weight"].detach().cpu().numpy() * out_scale).astype(np.float32),
+        "out_b": (sd["out.bias"].detach().cpu().numpy() * out_scale).astype(np.float32),
     }
     arrays["format_version"] = np.array(FORMAT_VERSION, np.int32)
     arrays["n_features"] = np.array(N_FEATURES, np.int32)
@@ -110,7 +134,8 @@ def random_weights(path, seed=0, scale=0.05):
     the plumbing end to end."""
     rng = np.random.default_rng(seed)
     arrays = {
-        "acc_w": (rng.standard_normal((N_FEATURES, H0)) * scale).astype(np.float32),
+        "acc_w": np.ascontiguousarray(
+            rng.standard_normal((N_FEATURES, H0)) * scale, dtype=np.float32),
         "acc_b": np.zeros(H0, dtype=np.float32),
         "l1_w":  (rng.standard_normal((H1, H0)) * scale).astype(np.float32),
         "l1_b":  np.zeros(H1, dtype=np.float32),
@@ -129,7 +154,10 @@ def load_weights(path):
         missing = [k for k in WEIGHT_KEYS if k not in z]
         if missing:
             raise ValueError(f"weight file is missing arrays: {missing}")
-        w = {k: z[k].astype(np.float32) for k in WEIGHT_KEYS}
+        # Force C order on load as well, so weight files written before the
+        # export fix above still give the runtime contiguous rows and one
+        # stable numba type.
+        w = {k: np.ascontiguousarray(z[k], dtype=np.float32) for k in WEIGHT_KEYS}
         if "format_version" in z and int(z["format_version"]) != FORMAT_VERSION:
             raise ValueError(
                 f"weight format {int(z['format_version'])} is unsupported; "

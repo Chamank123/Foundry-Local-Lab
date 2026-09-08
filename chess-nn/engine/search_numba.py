@@ -31,6 +31,89 @@ from bb_numba import (make, gen_pseudo, is_attacked, bsf, board_np,
                       bishop_att, rook_att, occ_side,
                       KNIGHT_ATT, KING_ATT, PAWN_ATT)
 
+# ---- optional neural evaluation -----------------------------------------
+# The NN modules live beside this file in a submission, and one directory up
+# in the development checkout; accept either without touching the board format.
+try:
+    from nn_runtime import nn_eval
+except ImportError:                                  # pragma: no cover
+    import os as _os
+    import sys as _sys
+    _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    from nn_runtime import nn_eval
+
+# Weights are THREADED through the search as an argument tuple, never read from
+# a module global inside njit code: numba freezes the *contents* of global
+# arrays into the machine code at compile time, so a global-weights design would
+# keep whatever happened to be loaded at the first call and silently ignore
+# every later load. Passing them in keeps the net swappable with no recompile.
+#
+# The placeholders below have the right dtype and rank but trivial shapes. Numba
+# types an array by dtype/rank/contiguity, not by shape, so compiling the search
+# against these and then passing real (780,256) weights needs no recompile.
+_NN_PLACEHOLDER = (
+    np.ascontiguousarray(np.zeros((2, 2), dtype=np.float32)),
+    np.zeros(2, dtype=np.float32),
+    np.ascontiguousarray(np.zeros((2, 2), dtype=np.float32)),
+    np.zeros(2, dtype=np.float32),
+    np.ascontiguousarray(np.zeros((1, 2), dtype=np.float32)),
+    np.zeros(1, dtype=np.float32),
+)
+_NNW = _NN_PLACEHOLDER
+_USE_NN = [0]          # 0 = hand-crafted evaluation (the default), 1 = network
+
+
+def load_nn(path):
+    """Load NN weights and switch evaluation to the network.
+
+    Per-game search state is rebuilt because the transposition table, killers
+    and history all hold scores produced by the PREVIOUS evaluator; reusing them
+    across a switch would mix two incompatible score scales.
+    """
+    global _NNW
+    import nn_model
+    w = nn_model.load_weights(path)
+    _NNW = (w["acc_w"], w["acc_b"], w["l1_w"], w["l1_b"], w["out_w"], w["out_b"])
+    for name, array in zip(("acc_w", "acc_b", "l1_w", "l1_b", "out_w", "out_b"), _NNW):
+        if not array.flags["C_CONTIGUOUS"]:
+            raise ValueError(
+                f"{name} is not C-contiguous; numba would treat it as a new type "
+                "and recompile the entire search on the first move, on the clock")
+    _USE_NN[0] = 1
+    _warmup_nn()
+    new_game()
+    return _NNW
+
+
+def _warmup_nn():
+    """Compile the search against the REAL weight arrays, inside the init budget.
+
+    get_move() runs the search in a worker thread joined with a short backstop.
+    Any compilation triggered on the first NN move therefore overruns that join,
+    the thread is abandoned with no move, and get_move silently returns its
+    fallback for every move of the game. Forcing the compile here is what keeps
+    that off the clock.
+    """
+    board = board_np("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    _stop[0] = 0
+    _nodes[0] = 0
+    search_root(board, 4, 0, -INF, INF, _tt_key, _tt_data, _killers, _history,
+                _stop, _nodes, _ghist, 0, _movebuf, _scorebuf, _mbbuf, _NNW, 1)
+    quiescence(board, -INF, INF, 0, _stop, _nodes, _movebuf, _scorebuf, _mbbuf,
+               _NNW, 1)
+
+
+def use_handcrafted():
+    """Switch back to the hand-crafted evaluation and clear stale search state."""
+    global _NNW
+    _NNW = _NN_PLACEHOLDER
+    _USE_NN[0] = 0
+    new_game()
+
+
+def nn_active():
+    return _USE_NN[0] == 1
+
 # board indices (mirror bb_numba)
 WP, WN, WB, WR, WQ, WK = 0, 1, 2, 3, 4, 5
 BP, BN, BB, BR, BQ, BK = 6, 7, 8, 9, 10, 11
@@ -130,7 +213,14 @@ def zkey(bd):
 
 
 @njit(cache=False)
-def evaluate(bd):
+def evaluate(bd, nnw, use_nn):
+    # Both branches are compiled once, because use_nn is a runtime argument
+    # rather than a compile-time constant. Switching evaluators mid-process
+    # therefore costs no compilation on the clock.
+    if use_nn == 1:
+        # nn_eval already returns mover-relative, clamped integer centipawns,
+        # the same contract as the hand-crafted evaluation below.
+        return nn_eval(bd, nnw[0], nnw[1], nnw[2], nnw[3], nnw[4], nnw[5])
     mg = 0
     eg = 0
     phase = 0
@@ -337,19 +427,19 @@ def make_null(bd):
 
 
 @njit(cache=False)
-def quiescence(bd, alpha, beta, ply, stop, nodes, movebuf, scorebuf, mbbuf):
+def quiescence(bd, alpha, beta, ply, stop, nodes, movebuf, scorebuf, mbbuf, nnw, use_nn):
     nodes[0] += 1
     if nodes[0] & 2047 == 0 and stop[0] == 1:
         return 0
     if ply >= MAX_PLY - 1:
-        return evaluate(bd)
+        return evaluate(bd, nnw, use_nn)
 
     white = bd[STM] == 0
     ksq = bsf(bd[WK] if white else bd[BK])
     in_check = is_attacked(bd, ksq, not white)
 
     if not in_check:
-        stand = evaluate(bd)
+        stand = evaluate(bd, nnw, use_nn)
         if stand >= beta:
             return beta
         if stand > alpha:
@@ -386,7 +476,7 @@ def quiescence(bd, alpha, beta, ply, stop, nodes, movebuf, scorebuf, mbbuf):
             continue
         any_legal = True
         score = -quiescence(nb, -beta, -alpha, ply + 1, stop, nodes,
-                            movebuf, scorebuf, mbbuf)
+                            movebuf, scorebuf, mbbuf, nnw, use_nn)
         if score >= beta:
             return beta
         if score > alpha:
@@ -401,13 +491,13 @@ def quiescence(bd, alpha, beta, ply, stop, nodes, movebuf, scorebuf, mbbuf):
 def negamax(bd, depth, alpha, beta, ply, allow_null,
             tt_key, tt_data, killers, history,
             stop, nodes, ghist, nghist,
-            movebuf, scorebuf, mbbuf):
+            movebuf, scorebuf, mbbuf, nnw, use_nn):
     nodes[0] += 1
     if nodes[0] & 2047 == 0 and stop[0] == 1:
         return 0
 
     if ply >= MAX_PLY - 1:
-        return evaluate(bd)
+        return evaluate(bd, nnw, use_nn)
 
     if ply > 0 and is_draw(bd, ghist, nghist):
         return 0
@@ -441,26 +531,26 @@ def negamax(bd, depth, alpha, beta, ply, allow_null,
 
     if depth <= 0:
         return quiescence(bd, alpha, beta, ply, stop, nodes,
-                          movebuf, scorebuf, mbbuf)
+                          movebuf, scorebuf, mbbuf, nnw, use_nn)
 
     # Reverse futility pruning (static null): if the static eval is already a
     # depth-scaled margin above beta, trust it and prune the node.
     if (not in_check and depth <= 6 and beta < MATE_BOUND
             and alpha > -MATE_BOUND):
-        static = evaluate(bd)
+        static = evaluate(bd, nnw, use_nn)
         if static - 85 * depth >= beta:
             return static - 85 * depth
 
     # Null-move pruning
     if (allow_null and not in_check and depth >= 3
             and has_non_pawn(bd, white) and beta < MATE_BOUND):
-        if evaluate(bd) >= beta:
+        if evaluate(bd, nnw, use_nn) >= beta:
             R = 2 + depth // 4
             nb = make_null(bd)
             null_score = -negamax(nb, depth - 1 - R, -beta, -beta + 1, ply + 1,
                                   False, tt_key, tt_data, killers, history,
                                   stop, nodes, ghist, nghist,
-                                  movebuf, scorebuf, mbbuf)
+                                  movebuf, scorebuf, mbbuf, nnw, use_nn)
             if null_score >= beta:
                 return beta
 
@@ -502,16 +592,16 @@ def negamax(bd, depth, alpha, beta, ply, allow_null,
         if move_index == 0:
             score = -negamax(nb, depth - 1, -beta, -alpha, ply + 1, True,
                              tt_key, tt_data, killers, history, stop, nodes,
-                             ghist, nghist, movebuf, scorebuf, mbbuf)
+                             ghist, nghist, movebuf, scorebuf, mbbuf, nnw, use_nn)
         else:
             score = -negamax(nb, depth - 1 - reduction, -alpha - 1, -alpha,
                              ply + 1, True, tt_key, tt_data, killers, history,
                              stop, nodes, ghist, nghist,
-                             movebuf, scorebuf, mbbuf)
+                             movebuf, scorebuf, mbbuf, nnw, use_nn)
             if score > alpha and (reduction != 0 or score < beta):
                 score = -negamax(nb, depth - 1, -beta, -alpha, ply + 1, True,
                                  tt_key, tt_data, killers, history, stop, nodes,
-                                 ghist, nghist, movebuf, scorebuf, mbbuf)
+                                 ghist, nghist, movebuf, scorebuf, mbbuf, nnw, use_nn)
 
         if score > best_score:
             best_score = score
@@ -557,7 +647,7 @@ def negamax(bd, depth, alpha, beta, ply, allow_null,
 def search_root(bd, depth, prev_best, alpha, beta,
                 tt_key, tt_data, killers, history,
                 stop, nodes, ghist, nghist,
-                movebuf, scorebuf, mbbuf):
+                movebuf, scorebuf, mbbuf, nnw, use_nn):
     """Returns (best_score, best_move, completed). Fail-soft within [alpha,beta]."""
     white = bd[STM] == 0
 
@@ -580,16 +670,16 @@ def search_root(bd, depth, prev_best, alpha, beta,
         if first:
             score = -negamax(nb, depth - 1, -beta, -alpha, 1, True,
                              tt_key, tt_data, killers, history, stop, nodes,
-                             ghist, nghist, movebuf, scorebuf, mbbuf)
+                             ghist, nghist, movebuf, scorebuf, mbbuf, nnw, use_nn)
             first = False
         else:
             score = -negamax(nb, depth - 1, -alpha - 1, -alpha, 1, True,
                              tt_key, tt_data, killers, history, stop, nodes,
-                             ghist, nghist, movebuf, scorebuf, mbbuf)
+                             ghist, nghist, movebuf, scorebuf, mbbuf, nnw, use_nn)
             if score > alpha:
                 score = -negamax(nb, depth - 1, -beta, -alpha, 1, True,
                                  tt_key, tt_data, killers, history, stop, nodes,
-                                 ghist, nghist, movebuf, scorebuf, mbbuf)
+                                 ghist, nghist, movebuf, scorebuf, mbbuf, nnw, use_nn)
         if stop[0] == 1:
             return best_score, best_move, 0
         if score > best_score:
@@ -717,7 +807,7 @@ def get_move(fen, time_left_ms):
                     bd, depth, prev if prev != -1 else 0, alpha, beta,
                     _tt_key, _tt_data, _killers, _history,
                     _stop, _nodes, _ghist, _nghist,
-                    _movebuf, _scorebuf, _mbbuf)
+                    _movebuf, _scorebuf, _mbbuf, _NNW, _USE_NN[0])
                 if completed == 0:
                     break
                 if sc <= alpha:                       # fail low: widen down
@@ -801,8 +891,8 @@ def _warmup():
     _stop[0] = 0
     _nodes[0] = 0
     search_root(b, 4, 0, -INF, INF, _tt_key, _tt_data, _killers, _history,
-                _stop, _nodes, _ghist, 0, _movebuf, _scorebuf, _mbbuf)
-    quiescence(b, -INF, INF, 0, _stop, _nodes, _movebuf, _scorebuf, _mbbuf)
+                _stop, _nodes, _ghist, 0, _movebuf, _scorebuf, _mbbuf, _NNW, _USE_NN[0])
+    quiescence(b, -INF, INF, 0, _stop, _nodes, _movebuf, _scorebuf, _mbbuf, _NNW, _USE_NN[0])
     see(b, 0, 8)  # force SEE to compile in the init budget, not on the clock
     new_game()
 
