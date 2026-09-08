@@ -1,0 +1,12 @@
+# Local training environment (rebuild with requirements_nn.txt)
+.venv/
+
+# Received pilot data — the sender already holds lichess_pilot_v1.zip, and the
+# handoff says to keep it unchanged. Extract it here to reproduce a run.
+pilot_shards/
+
+# Raw Lichess sample used for prep (not shipped)
+pilot_raw.jsonl
+
+__pycache__/
+*.pyc

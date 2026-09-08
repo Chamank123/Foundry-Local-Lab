@@ -1,0 +1,41 @@
+{
+  "constant_baseline_val_rmse": 0.24377499520778656,
+  "results": [
+    {
+      "epochs": 120,
+      "batch_size": 256,
+      "learning_rate": 0.003,
+      "lr_schedule": "cosine",
+      "best_val_rmse": 0.12246,
+      "best_epoch": 89,
+      "seconds": 147.7066910030003
+    },
+    {
+      "epochs": 150,
+      "batch_size": 256,
+      "learning_rate": 0.003,
+      "lr_schedule": "cosine",
+      "best_val_rmse": 0.12303,
+      "best_epoch": 72,
+      "seconds": 177.37493400400035
+    },
+    {
+      "epochs": 150,
+      "batch_size": 512,
+      "learning_rate": 0.005,
+      "lr_schedule": "cosine",
+      "best_val_rmse": 0.12607,
+      "best_epoch": 94,
+      "seconds": 115.08757229499997
+    },
+    {
+      "epochs": 100,
+      "batch_size": 512,
+      "learning_rate": 0.003,
+      "lr_schedule": "cosine",
+      "best_val_rmse": 0.15402,
+      "best_epoch": 96,
+      "seconds": 76.78712943200026
+    }
+  ]
+}

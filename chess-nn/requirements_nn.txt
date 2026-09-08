@@ -1,0 +1,5 @@
+numpy
+numba
+python-chess
+zstandard
+torch
