@@ -26,7 +26,14 @@ def torch_model_from_npz(weights):
     bit-for-bit. Any disagreement below is a real export/runtime defect.
     """
     import torch
-    model = nn_model.build_model()
+    # Infer the architecture from the file rather than assuming the module
+    # defaults: --h0/--h1 make the width a property of the checkpoint, and
+    # build_model() would silently construct a 256x32 net for a wider one.
+    h0 = weights["acc_b"].shape[0]
+    h1 = weights["l1_b"].shape[0]
+    # out_scale is already folded into out_w/out_b by export_weights, so the
+    # reconstruction must NOT apply it a second time.
+    model = nn_model.build_model(out_scale=1.0, h0=h0, h1=h1)
     with torch.no_grad():
         sd = model.state_dict()
         sd["acc.weight"].copy_(torch.from_numpy(weights["acc_w"].T.copy()))
