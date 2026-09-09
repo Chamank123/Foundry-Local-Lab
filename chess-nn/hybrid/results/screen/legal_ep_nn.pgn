@@ -1,0 +1,96 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 e5 2. d4 exd4 3. Nf3 Nf6 4. Qxd4 Nc6 5. Qd1 Nxe4 6. Be2 Bc5 7. O-O d5 8. Bf4 O-O 9. c3 Bf5 10. Nbd2 Bd6 11. Bxd6 cxd6 12. Nxe4 Bxe4 13. Rc1 Rc8 14. a3 Ne5 15. Re1 Qf6 16. h4 Qf4 17. Nxe5 dxe5 18. g3 Qf6 19. Ra1 Rfd8 20. Bg4 Rc4 21. Be2 Rc5 22. Bf1 Bf3 23. Qd3 e4 24. Qe3 b6 25. a4 h6 26. a5 Rxa5 27. Rxa5 bxa5 28. Qxa7 d4 29. cxd4 Rxd4 30. Qxa5 Kh7 31. Bh3 Rc4 32. Qd5 Rc2 33. Bd7 Rxb2 34. Bh3 g6 35. Qc5 Rd2 36. Qb4 Rc2 37. Qf8 Bg4 38. Qg8+ Kxg8 39. Rf1 Bxh3 40. g4 Bxf1 41. f4 Bc4 42. g5 Qa1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bd3 d5 4. exd5 Qxd5 5. O-O Bg4 6. Nc3 Qd7 7. h3 Be6 8. Be4 Nf6 9. Bxc6 Qxc6 10. Nxe5 Qb6 11. a4 Bd6 12. a5 Qd4 13. Nf3 Qb4 14. d4 O-O-O 15. Ra4 Qxa4 16. Nxa4 Rhe8 17. Be3 Bc4 18. Re1 Nd5 19. Bg5 Bb5 20. Bxd8 Rxe1+ 21. Qxe1 Bxa4 22. Qe4 Nf4 23. Bg5 Bc6 24. Qf5+ Ne6 25. Qxf7 Nf8 26. Bf4 h6 27. Bxd6 cxd6 28. Qxf8+ Be8 29. Qxe8+ Kc7 30. d5 h5 31. Qxh5 a6 32. Qf7+ Kb8 33. Qf8+ Kc7 34. Qxg7+ Kb8 35. Qd7 Ka8 36. Qxd6 Ka7 37. Qd8 b6 38. axb6+ Kb7 39. Qc7+ Ka8 40. Qa7# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e4 Nxe4 5. Bxc4 Nc6 6. O-O Bg4 7. Re1 Nd6 8. Bd5 Rc8 9. Qa4 h6 10. Ne5 Bd7 11. Nxf7 Nxf7 12. Nc3 e5 13. dxe5 Nb4 14. e6 Bxa4 15. exf7+ Kd7 16. Be6+ Kc6 17. Be3 Bc2 18. Nb5 Kxb5 19. a4+ Bxa4 20. Rxa4 Kxa4 21. Bc4 Nc2 22. b3+ Kb4 23. Ra1 Nxa1 24. Be2 Nxb3 25. Bf4 Qf6 26. Be5 Qxe5 27. g3 Qxe2 28. h4 Bc5 29. f8=Q Rcxf8 30. Kg2 Rxf2+ 31. Kg1 Rf1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 d5 2. Nf3 c5 3. dxc5 e6 4. Be3 Nd7 5. b4 a5 6. c3 axb4 7. cxb4 b6 8. c6 Bxb4+ 9. Bd2 Bxd2+ 10. Qxd2 Qf6 11. cxd7+ Bxd7 12. Nc3 Ra3 13. Rc1 Ne7 14. Qb2 Ra5 15. Qxb6 Nc6 16. Nb5 O-O 17. a4 Qb2 18. Rxc6 Qa1+ 19. Kd2 Rxb5 20. axb5 Qb2+ 21. Rc2 Qb4+ 22. Kc1 Ra8 23. Rc5 Ra1+ 24. Kc2 Ra2+ 25. Kd1 Qb3+ 26. Kc1 Ra1+ 27. Kd2 Rd1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 c5 2. d4 cxd4 3. c3 Nf6 4. e5 Ne4 5. cxd4 d5 6. Nf3 e6 7. Nc3 Bb4 8. Bb5+ Nc6 9. O-O Nxc3 10. bxc3 Bxc3 11. Ba3 Bxa1 12. Bxc6+ bxc6 13. Qa4 Bd7 14. Rb1 Bc3 15. Rb7 c5 16. Qc2 cxd4 17. Qb3 a5 18. h4 a4 19. Qc2 Rb8 20. Rxb8 Qxb8 21. Kh2 Qb5 22. h5 Qc4 23. Qb1 d3 24. Qb8+ Bc8 25. Ng5 d2 26. Bd6 d1=Q 27. Nf3 Qdf1 28. Kg3 Qh1 29. Qa7 Bd7 30. Qb8+ Qc8 31. Qb6 Qxh5 32. Bb8 Qc4 33. Qb4 Bxb4 34. Nd4 Qxd4 35. f3 Be1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 c5 2. Nc3 Nc6 3. Nf3 Nf6 4. Bc4 e6 5. O-O Be7 6. h3 d5 7. Bd3 c4 8. exd5 exd5 9. Be2 d4 10. Nb1 d3 11. Na3 dxe2 12. Qxe2 O-O 13. Nxc4 b5 14. Nce5 Nxe5 15. Nxe5 Bd6 16. Qxb5 Rb8 17. Qe2 Re8 18. d4 Bf5 19. c4 Qe7 20. Bf4 Bg6 21. Rae1 Qd8 22. Bg3 h6 23. c5 Bh5 24. Qc4 Rc8 25. Qa4 Bc7 26. Nc6 Qd5 27. Rxe8+ Rxe8 28. Bxc7 Be2 29. Re1 Re4 30. Be5 Qe6 31. Nxa7 Bb5 32. Qa5 Rxe1+ 33. Qxe1 Ba6 34. c6 Qd5 35. c7 Bb7 36. c8=Q+ Bxc8 37. Nxc8 Qe6 38. Qc3 Nd5 39. Qc4 Kh8 40. a4 f6 41. Bg3 Qe4 42. Nd6 Qe1+ 43. Kh2 Qe6 44. a5 f5 45. Be5 f4 46. a6 h5 47. a7 Kh7 48. a8=Q Qg6 49. Qaxd5 Qe8 50. Nxe8 g6 51. Bg7 h4 52. Qg8# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 Nf6 2. e3 Nc6 3. Nf3 d5 4. c4 Be6 5. c5 Ne4 6. Bb5 a6 7. Bxc6+ bxc6 8. Qa4 Qd7 9. Ne5 Qc8 10. Qxc6+ Kd8 11. Nc3 f6 12. Nxe4 fxe5 13. Ng5 Bg8 14. O-O e4 15. Rb1 h6 16. Nh3 Bf7 17. b3 Rb8 18. Nf4 Qb7 19. Qa4 Kc8 20. Ne6 Qb5 21. b4 Qxa4 22. b5 Bxe6 23. Bd2 Qxa2 24. c6 Qxd2 25. Rfc1 axb5 26. Kh1 Qxf2 27. Rc3 Qd2 28. Ra3 Qc2 29. Rf1 Qxc6 30. Ra7 Qc3 31. Ra6 Kd7 32. Rb1 Qxe3 33. Rf1 Qxd4 34. Rxe6 Kxe6 35. h3 e3 36. Rc1 e2 37. Rc6+ Kf7 38. Rc1 Qd1+ 39. Rxd1 exd1=Q+ 40. Kh2 b4 41. h4 b3 42. g3 b2 43. h5 Qxh5+ 44. Kg2 b1=Q 45. g4 Qxg4+ 46. Kf2 Qbg1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 Nf6 2. Nf3 c5 3. dxc5 e6 4. Be3 Ng4 5. Bd4 Nc6 6. h3 Nxd4 7. Qxd4 Nf6 8. e4 b6 9. cxb6 axb6 10. e5 Bc5 11. Qh4 Bb7 12. exf6 Bxf3 13. fxg7 Qxh4 14. gxh8=Q+ Ke7 15. gxf3 Qxf2+ 16. Kd1 Rxh8 17. Be2 Rg8 18. Rf1 Qe3 19. Nd2 Rg2 20. Re1 Bb4 21. c3 f5 22. cxb4 d5 23. Rc1 Qf2 24. Rc7+ Kf8 25. Rxh7 b5 26. Nb3 d4 27. Nc5 Kg8 28. Rb7 Rh2 29. Rxb5 d3 30. Rb8+ Kf7 31. Nxd3 Qe3 32. Nc5 Kf6 33. Rb6 Kg7 34. Nxe6+ Kh7 35. Rb7+ Kg8 36. Nc5 Kh8 37. Rb8+ Kh7 38. Rd8 Qf2 39. Ne6 Qg3 40. b5 Rf2 41. b6 Rh2 42. b7 Qe5 43. b8=Q Qxe6 44. Rh8+ Kg6 45. Rg1+ Rg2 46. Rxg2+ Kf6 47. Rf8+ Qf7 48. Qd6# 1-0
+

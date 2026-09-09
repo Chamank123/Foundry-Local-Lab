@@ -1,0 +1,278 @@
+{
+  "name": "legacy_nn",
+  "weights": "/workspace/scratch/fca6cd03504d/nn_hybrid_work/project/net_8m_scale400_cos24.npz",
+  "weight": 1,
+  "ep": "raw",
+  "arguments": {
+    "out": "results/screen_v1",
+    "residual": "residual_64x16.npz",
+    "cpu": 0,
+    "games": 8,
+    "opening_offset": 0,
+    "depth": 4,
+    "base": 120,
+    "inc": 0.5,
+    "max_plies": 600
+  },
+  "score": 0.0,
+  "played": 8,
+  "issues": 0,
+  "games": [
+    {
+      "score": 0.0,
+      "result": "0-1",
+      "candidate_white": true,
+      "opening": "e2e4 e7e5",
+      "issue": null,
+      "plies": 72,
+      "moves": [
+        35,
+        35
+      ],
+      "nodes": [
+        450147,
+        264518
+      ],
+      "thinking_s": [
+        4.475069945000996,
+        0.3883470659993691
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        133.024930054999,
+        137.11165293400063
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "1-0",
+      "candidate_white": false,
+      "opening": "e2e4 e7e5",
+      "issue": null,
+      "plies": 71,
+      "moves": [
+        34,
+        35
+      ],
+      "nodes": [
+        225579,
+        377651
+      ],
+      "thinking_s": [
+        2.252881893000449,
+        0.5237144220000118
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        134.74711810699955,
+        136.976285578
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "0-1",
+      "candidate_white": true,
+      "opening": "d2d4 d7d5",
+      "issue": null,
+      "plies": 62,
+      "moves": [
+        30,
+        30
+      ],
+      "nodes": [
+        486494,
+        406070
+      ],
+      "thinking_s": [
+        5.394408677000229,
+        0.5541459159994702
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        129.60559132299977,
+        134.44585408400053
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "1-0",
+      "candidate_white": false,
+      "opening": "d2d4 d7d5",
+      "issue": null,
+      "plies": 69,
+      "moves": [
+        33,
+        34
+      ],
+      "nodes": [
+        322745,
+        317508
+      ],
+      "thinking_s": [
+        3.4813648600006672,
+        0.4276021949999631
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        133.01863513999933,
+        136.57239780500004
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "0-1",
+      "candidate_white": true,
+      "opening": "e2e4 c7c5",
+      "issue": null,
+      "plies": 62,
+      "moves": [
+        30,
+        30
+      ],
+      "nodes": [
+        298057,
+        351627
+      ],
+      "thinking_s": [
+        2.883895267999833,
+        0.41040854700077034
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        132.11610473200017,
+        134.58959145299923
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "1-0",
+      "candidate_white": false,
+      "opening": "e2e4 c7c5",
+      "issue": null,
+      "plies": 97,
+      "moves": [
+        47,
+        48
+      ],
+      "nodes": [
+        453560,
+        806365
+      ],
+      "thinking_s": [
+        4.297648696999204,
+        0.7951970140020421
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        139.2023513030008,
+        143.20480298599796
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "0-1",
+      "candidate_white": true,
+      "opening": "d2d4 g8f6",
+      "issue": null,
+      "plies": 64,
+      "moves": [
+        31,
+        31
+      ],
+      "nodes": [
+        211010,
+        248188
+      ],
+      "thinking_s": [
+        2.175629281000056,
+        0.2812025619996348
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        133.32437071899994,
+        135.21879743800037
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "1-0",
+      "candidate_white": false,
+      "opening": "d2d4 g8f6",
+      "issue": null,
+      "plies": 71,
+      "moves": [
+        34,
+        35
+      ],
+      "nodes": [
+        228719,
+        698217
+      ],
+      "thinking_s": [
+        2.5862855049986138,
+        0.7371609500009981
+      ],
+      "startup_s": [
+        66.62276565699995,
+        85.08424519900018
+      ],
+      "peak_rss_mb": [
+        494.98046875,
+        494.80078125
+      ],
+      "remaining_s": [
+        134.4137144950014,
+        136.762839049999
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "best_epoch": 3,
+  "validation_rmse": 0.14309766131189605,
+  "test_rmse": 0.14510302633763195,
+  "baseline_test_rmse": 0.1883308235158913,
+  "data_rows": 8000000,
+  "ep_flagged_rows": 13378,
+  "illegal_ep_rows": 0,
+  "history": [
+    {
+      "epoch": 1,
+      "validation_rmse": 0.14835802978155144,
+      "seconds": 158.42520595099995
+    },
+    {
+      "epoch": 2,
+      "validation_rmse": 0.1457325335982772,
+      "seconds": 121.26353012300001
+    },
+    {
+      "epoch": 3,
+      "validation_rmse": 0.14309766131189605,
+      "seconds": 138.4305106280001
+    }
+  ],
+  "arguments": {
+    "shards": "../data/larger_shards",
+    "out": "residual_64x16.npz",
+    "epochs": 3,
+    "batch": 256,
+    "lr": 0.003,
+    "h0": 64,
+    "h1": 16,
+    "threads": 2,
+    "seed": 7
+  }
+}

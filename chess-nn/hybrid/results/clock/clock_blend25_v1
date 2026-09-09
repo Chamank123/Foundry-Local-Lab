@@ -1,0 +1,86 @@
+{
+  "arguments": {
+    "nn": "net_8m_scale400_cos24.npz",
+    "weight": 0.25,
+    "ep": "legal",
+    "games": 4,
+    "depth": 0,
+    "base": 120.0,
+    "inc": 0.5,
+    "max_plies": 600,
+    "cpu": 0,
+    "opening_offset": 4,
+    "reuse": false,
+    "pristine": true,
+    "out": "results/clock_blend25_v1"
+  },
+  "games": [
+    {
+      "score": 0.0,
+      "result": "0-1",
+      "candidate_white": true,
+      "opening": "c2c4 e7e5",
+      "issue": null,
+      "plies": 72,
+      "moves": [
+        35,
+        35
+      ],
+      "nodes": [
+        17905671,
+        157638560
+      ],
+      "thinking_s": [
+        85.658386823,
+        85.69002700399989
+      ],
+      "startup_s": [
+        28.214276968000036,
+        22.950501212999995
+      ],
+      "peak_rss_mb": [
+        498.95703125,
+        469.93359375
+      ],
+      "remaining_s": [
+        51.841613177,
+        51.80997299600011
+      ]
+    },
+    {
+      "score": 0.0,
+      "result": "1-0",
+      "candidate_white": false,
+      "opening": "c2c4 e7e5",
+      "issue": null,
+      "plies": 135,
+      "moves": [
+        66,
+        67
+      ],
+      "nodes": [
+        34657763,
+        279535890
+      ],
+      "thinking_s": [
+        144.322628678,
+        138.89510657599988
+      ],
+      "startup_s": [
+        29.67605855300002,
+        22.789348513999926
+      ],
+      "peak_rss_mb": [
+        498.67578125,
+        468.734375
+      ],
+      "remaining_s": [
+        8.677371321999999,
+        14.604893424000124
+      ]
+    }
+  ],
+  "score": 0.0,
+  "played": 2,
+  "issues": 0
+}

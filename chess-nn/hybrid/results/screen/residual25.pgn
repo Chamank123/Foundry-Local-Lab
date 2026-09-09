@@ -1,0 +1,96 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 e5 2. Nf3 Nf6 3. Nc3 Bd6 4. d4 Nc6 5. d5 Ne7 6. Bc4 O-O 7. O-O Ng6 8. Re1 c6 9. h3 b5 10. Bb3 b4 11. Na4 Bb7 12. c3 cxd5 13. exd5 Rc8 14. cxb4 e4 15. Ng5 Bxb4 16. Nc3 Ne7 17. Ngxe4 Nexd5 18. Nxd5 Nxd5 19. Bg5 Qa5 20. Rf1 Nc3 21. Nxc3 Qxg5 22. Nd5 Rfd8 23. Qf3 Bd6 24. Rae1 Be5 25. h4 Bxd5 26. Qxd5 Bh2+ 27. Kxh2 Qxh4+ 28. Kg1 Qf6 29. Re5 h6 30. Rf5 Qe6 31. Qf3 Qc6 32. Qh5 g6 33. Bxf7+ Kg7 34. Qg4 Qb6 35. Bb3 Kh8 36. Rf7 Qd6 37. Rd1 h5 38. Qg5 Qxd1+ 39. Bxd1 h4 40. Qf6+ Kg8 41. Qg7# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bd3 Nf6 4. O-O Bd6 5. Na3 O-O 6. Nc4 Re8 7. Nxd6 cxd6 8. c3 a5 9. Qc2 h6 10. Bc4 a4 11. d3 Qc7 12. Rd1 Qd8 13. h3 Qe7 14. Bb5 Nh5 15. g3 Nf6 16. Bxa4 d5 17. Bb3 dxe4 18. dxe4 d6 19. Nh4 Bxh3 20. Ng6 Qd7 21. Qe2 Be6 22. Bxe6 Qxe6 23. Nh4 Ra4 24. b4 Rea8 25. a3 Re8 26. Nf5 d5 27. Qc2 Nxe4 28. Nxg7 Kxg7 29. b5 Rc4 30. bxc6 bxc6 31. Bb2 Qh3 32. a4 Re6 33. Rac1 Rf6 34. Rf1 Ng5 35. f4 Qxg3+ 36. Kh1 Rcxf4 37. Rxf4 Rxf4 38. Qh2 Rh4 39. Qxh4 Qxh4+ 40. Kg2 Ne4 41. Rg1 Qf2+ 42. Kh1+ Ng3+ 43. Rxg3+ Qxg3 44. Ba3 Qe1+ 45. Kg2 Qxc3 46. Bd6 Qd2+ 47. Kh3 Qe3+ 48. Kh2 Qe2+ 49. Kg3 d4 50. a5 d3 51. a6 d2 52. a7 d1=Q 53. Bf8+ Kg6 54. a8=Q Qf3+ 55. Kh2 Qdh1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 d5 2. Nf3 Nf6 3. Nc3 Nc6 4. Be3 Be6 5. Rc1 Rc8 6. h3 h6 7. Ne5 Nxe5 8. dxe5 Ne4 9. Bxa7 Nxc3 10. bxc3 c5 11. Rb1 Qa5 12. Rxb7 Qxc3+ 13. Qd2 Qa1+ 14. Qd1 Qxe5 15. Bb6 Qc3+ 16. Qd2 Qa1+ 17. Qd1 Qxd1+ 18. Kxd1 c4 19. a4 c3 20. e4 f5 21. Bb5+ Kf7 22. exf5 Bxf5 23. Kc1 Be4 24. f3 Bf5 25. Rd1 Be6 26. a5 d4 27. Rxd4 g6 28. a6 Bg7 29. Rd6 Be5 30. Rd1 Rb8 31. Bc6 Rbc8 32. Bd7 Bxd7 33. Rdxd7 Rhe8 34. a7 h5 35. Kb1 h4 36. Ka2 Kf6 37. Ka3 Rc4 38. Bd8 Rc8 39. Ba5 Kf7 40. Kb3 Kf8 41. Rd3 Kf7 42. Bxc3 Bf4 43. Rdd7 Ke6 44. Be1 g5 45. Bb4 Bd6 46. Bxd6 exd6 47. c3 d5 48. Kb2 Red8 49. Rxd8 Rxd8 50. Rb8 Rd7 51. a8=Q Rd6 52. Rb7 Kf5 53. Rf7+ Rf6 54. Qxd5+ Kg6 55. Rxf6+ Kxf6 56. Kc2 Kg6 57. c4 Kf6 58. c5 Kg6 59. c6 g4 60. c7 gxh3 61. c8=Q hxg2 62. Qdf5+ Kh6 63. Qcf8# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1/2-1/2"]
+[TimeControl "depth4"]
+[Termination "Termination.FIFTY_MOVES"]
+
+1. d4 d5 2. Nf3 Nf6 3. Nc3 Nc6 4. Be3 Be6 5. Rc1 Ng4 6. Bf4 Bf5 7. h3 Nf6 8. g4 Be6 9. Bg2 g6 10. Nb5 Rc8 11. Ng5 Bd7 12. O-O h6 13. Nf3 Bg7 14. Re1 a6 15. Nc3 O-O 16. e4 dxe4 17. Nxe4 Nxe4 18. Rxe4 f5 19. gxf5 Bxf5 20. Re1 Nxd4 21. Nxd4 Qxd4 22. Qxd4 Bxd4 23. Bxh6 Bxb2 24. Bd5+ e6 25. Rxe6 Bxe6 26. Bxe6+ Kh7 27. Bxf8 Rxf8 28. Rd1 Kh6 29. Rb1 Bd4 30. Rf1 Rf4 31. Bc8 b6 32. Bxa6 Kg5 33. Bd3 Be5 34. Kg2 Ra4 35. Re1 Kf6 36. Bxg6 Kxg6 37. Rxe5 Kf6 38. Re8 Rxa2 39. Re2 Kf5 40. h4 c5 41. h5 Kg5 42. f4+ Kxh5 43. f5 Kg5 44. Rf2 Kf6 45. Kg3 c4 46. Kf4 c3 47. Ke4 b5 48. Rg2 Ra4+ 49. Kd3 b4 50. Rf2 Ra5 51. Rf4 Rd5+ 52. Kc4 Ke5 53. f6 b3 54. f7 Rd8 55. Rf1 bxc2 56. Kxc3 Rc8+ 57. Kd2 Kd4 58. Kc1 Ke3 59. f8=Q Rxf8 60. Rxf8 Kd3 61. Rd8+ Kc3 62. Rc8+ Kd3 63. Rxc2 Ke3 64. Rc3+ Ke2 65. Kc2 Kf2 66. Kd3 Kg1 67. Rc2 Kf1 68. Ke3 Kg1 69. Rc8 Kg2 70. Rh8 Kg3 71. Rg8+ Kh3 72. Ke4 Kh2 73. Ke5 Kh3 74. Kf6 Kh2 75. Rg4 Kh3 76. Rg7 Kh4 77. Rg8 Kh3 78. Rg1 Kh4 79. Rg7 Kh3 80. Ke6 Kh4 81. Kf7 Kh3 82. Rg1 Kh2 83. Rg8 Kh3 84. Rg6 Kh4 85. Rg1 Kh3 86. Rg5 Kh4 87. Rg2 Kh3 88. Rg8 Kh4 89. Rg6 Kh3 90. Ke6 Kh4 91. Rg7 Kh3 92. Rg5 Kh2 93. Kf7 Kh3 94. Kf6 Kh4 95. Kg6 Kh3 96. Kf5 Kh2 97. Kf6 Kh1 98. Rg3 Kh2 99. Rg6 Kh3 100. Kf5 Kh2 101. Ke5 Kh1 102. Rg8 Kh2 103. Kf5 Kh3 104. Rg1 Kh2 105. Rg6 Kh3 106. Rg4 Kh2 107. Rg5 Kh3 108. Rg8 Kh2 109. Rg4 Kh3 110. Kg5 Kh2 111. Kg6 Kh3 112. Rg1 Kh2 1/2-1/2
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 c5 2. Nc3 Nf6 3. e5 Ng8 4. Nf3 Nc6 5. Bb5 a6 6. Ba4 b5 7. Bb3 c4 8. d4 d5 9. O-O cxb3 10. axb3 b4 11. Na4 Bf5 12. Bg5 h6 13. Bh4 g5 14. Bg3 g4 15. Nh4 Bc8 16. Nc5 Bg7 17. Rc1 h5 18. c3 a5 19. e6 fxe6 20. cxb4 Nxd4 21. Ng6 axb4 22. Nxh8 Bxh8 23. Qd3 Ra2 24. Qh7 Ne2+ 25. Kh1 Kf8 26. Qxh8 Nxc1 27. f3 Qe8 28. fxg4+ Qf7 29. Rxf7+ Kxf7 30. Be5 Nf6 31. Qxc8 hxg4 32. Qxe6+ Kf8 33. Bxf6 exf6 34. Qxf6+ Kg8 35. Qg5+ Kf8 36. Qxc1 Ke7 37. Qb1 Ra8 38. Qd1 Kd6 39. Ne4+ Ke5 40. Ng5 Ra2 41. Qb1 Ra5 42. Qe1+ Kf5 43. Ne6 Ra2 44. Qb1+ Kxe6 45. Qxa2 Ke5 46. Qa5 Ke4 47. Qxb4+ d4 48. Qe7+ Kd3 49. Qe5 Kc2 50. Qxd4 Kxb3 51. g3 Ka2 52. b4 Kb3 53. Kg2 Ka3 54. Qxg4 Ka4 55. h4 Kb3 56. b5 Kb2 57. b6 Kc3 58. b7 Kc2 59. b8=Q Kc3 60. Qe2 Kd4 61. Qbe5# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "0-1"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 c5 2. Nc3 Nf6 3. e5 Ng8 4. Nf3 Nc6 5. Bb5 a6 6. Ba4 b5 7. Bb3 c4 8. a4 cxb3 9. axb5 Nb4 10. cxb3 Nd3+ 11. Ke2 Nxc1+ 12. Qxc1 Qb6 13. Qc2 Rb8 14. bxa6 Bxa6+ 15. d3 e6 16. Rhd1 Rd8 17. Ke1 Bb4 18. Ng5 Nh6 19. Qd2 Nf5 20. d4 O-O 21. Rac1 h6 22. Nge4 d5 23. exd6 Nxd6 24. Qf4 Nxe4 25. Qxe4 Qb5 26. Qf3 e5 27. d5 e4 28. Qe3 Qf1+ 29. Kd2 Rxd5+ 30. Kc2 Bd3+ 31. Rxd3 Qxd3+ 32. Qxd3 exd3+ 33. Kd2 Re8 34. Rf1 Re2+ 35. Kc1 Rc5 36. Kb1 Bxc3 37. bxc3 Rxc3 38. b4 d2 39. Rd1 Rxf2 40. Kb2 Rc4 41. g3 Re4 42. h4 Ree2 43. b5 Re1 44. Kc2 Rxd1 45. Kxd1 g5 46. b6 gxh4 47. b7 Rf1+ 48. Kxd2 Rb1 49. gxh4 Rxb7 50. Kd3 Rb2 51. h5 Kg7 52. Ke4 Rb5 53. Kd4 Rxh5 54. Ke4 Kf6 55. Kd4 Rh2 56. Ke4 h5 57. Kd4 h4 58. Kc4 Ke5 59. Kc5 Rc2+ 60. Kb4 h3 61. Kb3 Rf2 62. Kc4 h2 63. Kc5 h1=Q 64. Kb4 Qb1+ 65. Kc3 Ke4 66. Kc4 Rc2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "1-0"]
+[TimeControl "depth4"]
+[Termination "Termination.CHECKMATE"]
+
+1. d4 Nf6 2. c4 Nc6 3. Nf3 e6 4. d5 Na5 5. Ne5 Bd6 6. f4 c6 7. dxe6 dxe6 8. c5 Bxe5 9. Qxd8+ Kxd8 10. fxe5 Ng4 11. Nc3 Nc4 12. h3 Ngxe5 13. b3 Na5 14. Bf4 f6 15. O-O-O+ Kc7 16. Ne4 Bd7 17. Nd6 Rhf8 18. b4 Ng6 19. Be3 b6 20. bxa5 bxa5 21. a4 e5 22. Bd2 Be6 23. Bxa5+ Kb8 24. Kc2 Ba2 25. Ra1 a6 26. Rxa2 Ka7 27. e3 Nh4 28. Rb2 Rab8 29. Rb6 Rxb6 30. cxb6+ Kb8 31. b7 e4 32. Rg1 Ka7 33. Bc4 h5 34. Rb1 Kb8 35. Nc8 Nxg2 36. Bc7+ Kxc7 37. b8=Q+ Kd7 38. Qd6+ Ke8 39. Qe7# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1/2-1/2"]
+[TimeControl "depth4"]
+[Termination "Termination.FIFTY_MOVES"]
+
+1. d4 Nf6 2. Nf3 d5 3. Nc3 Nc6 4. Be3 Be6 5. Rc1 Ng4 6. Bf4 Bf5 7. h3 Nf6 8. g4 Be6 9. Bg2 g6 10. Nb5 Rc8 11. Ng5 Bd7 12. O-O h6 13. Nf3 Bg7 14. Re1 a6 15. Nc3 O-O 16. e4 dxe4 17. Nxe4 Nxe4 18. Rxe4 f5 19. gxf5 Bxf5 20. Re1 Nxd4 21. Nxd4 Qxd4 22. Qxd4 Bxd4 23. Bxh6 Bxb2 24. Bd5+ e6 25. Rxe6 Bxe6 26. Bxe6+ Kh7 27. Bxf8 Rxf8 28. Rd1 Kh6 29. Rb1 Bd4 30. Rf1 Rf4 31. Bc8 b6 32. Bxa6 Kg5 33. Bd3 Be5 34. Kg2 Ra4 35. Re1 Kf6 36. Bxg6 Kxg6 37. Rxe5 Kf6 38. Re8 Rxa2 39. Re2 Kf5 40. h4 c5 41. h5 Kg5 42. f4+ Kxh5 43. f5 Kg5 44. Rf2 Kf6 45. Kg3 c4 46. Kf4 c3 47. Ke4 b5 48. Rg2 Ra4+ 49. Kd3 b4 50. Rf2 Ra5 51. Rf4 Rd5+ 52. Kc4 Ke5 53. f6 b3 54. f7 Rd8 55. Rf1 bxc2 56. Kxc3 Rc8+ 57. Kd2 Kd4 58. Kc1 Ke3 59. f8=Q Rxf8 60. Rxf8 Kd3 61. Rd8+ Kc3 62. Rc8+ Kd3 63. Rxc2 Ke3 64. Rc3+ Ke2 65. Kc2 Kf2 66. Kd3 Kg1 67. Rc2 Kf1 68. Ke3 Kg1 69. Rc8 Kg2 70. Rh8 Kg3 71. Rg8+ Kh3 72. Ke4 Kh2 73. Ke5 Kh3 74. Kf6 Kh2 75. Rg4 Kh3 76. Rg7 Kh4 77. Rg8 Kh3 78. Rg1 Kh4 79. Rg7 Kh3 80. Ke6 Kh4 81. Kf7 Kh3 82. Rg1 Kh2 83. Rg8 Kh3 84. Rg6 Kh4 85. Rg1 Kh3 86. Rg5 Kh4 87. Rg2 Kh3 88. Rg8 Kh4 89. Rg6 Kh3 90. Ke6 Kh4 91. Rg7 Kh3 92. Rg5 Kh2 93. Kf7 Kh3 94. Kf6 Kh4 95. Kg6 Kh3 96. Kf5 Kh2 97. Kf6 Kh1 98. Rg3 Kh2 99. Rg6 Kh3 100. Kf5 Kh2 101. Ke5 Kh1 102. Rg8 Kh2 103. Kf5 Kh3 104. Rg1 Kh2 105. Rg6 Kh3 106. Rg4 Kh2 107. Rg5 Kh3 108. Rg8 Kh2 109. Rg4 Kh3 110. Kg5 Kh2 111. Kg6 Kh3 112. Rg1 Kh2 1/2-1/2
+

@@ -1,0 +1,86 @@
+{
+  "arguments": {
+    "nn": "residual_64x16.npz",
+    "weight": 0.25,
+    "ep": "legal",
+    "games": 2,
+    "depth": 0,
+    "base": 120.0,
+    "inc": 0.5,
+    "max_plies": 600,
+    "cpu": 0,
+    "opening_offset": 6,
+    "reuse": false,
+    "pristine": true,
+    "out": "results/clock_residual25_v2"
+  },
+  "games": [
+    {
+      "score": 1.0,
+      "result": "1-0",
+      "candidate_white": true,
+      "opening": "e2e4 e7e6",
+      "issue": null,
+      "plies": 99,
+      "moves": [
+        49,
+        48
+      ],
+      "nodes": [
+        88607427,
+        223544912
+      ],
+      "thinking_s": [
+        113.37714538099976,
+        115.87139014899958
+      ],
+      "startup_s": [
+        30.254444944999932,
+        22.782283037999832
+      ],
+      "peak_rss_mb": [
+        498.3125,
+        468.77734375
+      ],
+      "remaining_s": [
+        31.122854619000236,
+        28.12860985100042
+      ]
+    },
+    {
+      "score": 0.5,
+      "result": "1/2-1/2",
+      "candidate_white": false,
+      "opening": "e2e4 e7e6",
+      "issue": null,
+      "plies": 187,
+      "moves": [
+        92,
+        93
+      ],
+      "nodes": [
+        118687150,
+        296702018
+      ],
+      "thinking_s": [
+        151.8732529809986,
+        148.3974174769985
+      ],
+      "startup_s": [
+        27.57079488400018,
+        22.22732937899991
+      ],
+      "peak_rss_mb": [
+        498.0703125,
+        468.52734375
+      ],
+      "remaining_s": [
+        14.126747019001414,
+        18.1025825230015
+      ]
+    }
+  ],
+  "score": 1.5,
+  "played": 2,
+  "issues": 0
+}

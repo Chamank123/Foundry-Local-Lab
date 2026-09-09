@@ -1,0 +1,24 @@
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "candidate"]
+[Black "baseline"]
+[Result "1-0"]
+[TimeControl "120.0+0.5"]
+[Termination "Termination.CHECKMATE"]
+
+1. e4 e6 2. d4 d5 3. Nc3 Be7 4. Be3 Nc6 5. e5 Nh6 6. Bxh6 gxh6 7. Qg4 Kf8 8. Nf3 Rg8 9. Qh3 Kg7 10. O-O-O a6 11. a3 b5 12. Be2 Re8 13. Rhe1 Bb7 14. Qg4+ Kh8 15. Qh5 Kg7 16. h4 Qd7 17. Nh2 Rg8 18. Kb1 Raf8 19. Ng4 Kh8 20. Bf3 f5 21. exf6 Bxf6 22. Qxh6 Bxd4 23. Qxe6 Qxe6 24. Rxe6 Bxc3 25. bxc3 Bc8 26. Rxc6 Bxg4 27. Rxa6 d4 28. cxd4 Bxf3 29. gxf3 Rxf3 30. Rc6 Rg7 31. Re1 Rxf2 32. Re8+ Rg8 33. Re7 Rh2 34. d5 b4 35. Rcxc7 Rxh4 36. a4 Rg1+ 37. Kb2 Rh6 38. a5 Rg3 39. Rc6 Rh5 40. d6 Rg8 41. a6 Rhg5 42. d7 b3 43. Re8 Rd5 44. Rcc8 h5 45. a7 Rd4 46. Rxg8+ Kh7 47. a8=Q Rd5 48. Qxd5 Kh6 49. Qg5+ Kh7 50. Qxh5# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "baseline"]
+[Black "candidate"]
+[Result "1/2-1/2"]
+[TimeControl "120.0+0.5"]
+[Termination "Termination.INSUFFICIENT_MATERIAL"]
+
+1. e4 e6 2. Nc3 c5 3. Nf3 Nc6 4. d4 cxd4 5. Nxd4 Nf6 6. Bf4 Bb4 7. Nxc6 bxc6 8. Qf3 d5 9. e5 Ne4 10. a3 Qa5 11. Be2 g5 12. Bd2 Nxd2 13. Kxd2 Be7 14. Rhd1 O-O 15. Kc1 f6 16. exf6 Bxf6 17. Qg3 h6 18. Bd3 c5 19. Rf1 Bd7 20. a4 Bxc3 21. bxc3 c4 22. Be2 Rf4 23. Bg4 Re4 24. Ra3 Rd8 25. h4 Qc5 26. Ra1 d4 27. hxg5 hxg5 28. Bf3 Re5 29. cxd4 Qxd4 30. Ra2 Be8 31. Rd1 Qf4+ 32. Qxf4 Rxd1+ 33. Kxd1 gxf4 34. Rb2 Bxa4 35. Rb8+ Kf7 36. Rb7+ Kf6 37. Rxa7 Bb5 38. Rc7 Rg5 39. Kd2 c3+ 40. Rxc3 Bf1 41. Rc8 e5 42. Be4 Bxg2 43. f3 Rg3 44. Rc6+ Kg5 45. Ke2 Bh3 46. Rg6+ Kh4 47. c4 Rxg6 48. Bxg6 Be6 49. c5 Bd5 50. Be4 Bb3 51. Kf2 Bf7 52. c6 Be6 53. c7 Bh3 54. Bd3 Bc8 55. Be2 Kg5 56. Kg1 Kf6 57. Bd1 Ke6 58. Be2 Kd7 59. Kf1 Kxc7 60. Bd3 Be6 61. Kg2 Kd6 62. Bh7 Kc5 63. Kg1 Bd5 64. Kf2 Kd4 65. Bf5 Bb7 66. Bg4 Kd3 67. Bh3 Bc6 68. Bg4 Kc2 69. Bf5+ Kd2 70. Bb1 Kc3 71. Bg6 Bd5 72. Bb1 Bc4 73. Bf5 Bd3 74. Bg4 Bg6 75. Ke2 Bb1 76. Kf2 e4 77. fxe4 Bxe4 78. Bf3 Kd3 79. Bh5 Kd4 80. Ke2 Bg2 81. Bg4 Bc6 82. Kd2 Bd5 83. Ke2 Bg2 84. Be6 Bc6 85. Bg4 Bd5 86. Bd7 Kc3 87. Bg4 Kc2 88. Bf3 Bc4+ 89. Kf2 Kd2 90. Be4 Be2 91. Bf3 Bb5 92. Be4 Kc3 93. Kf3 Kd4 94. Kxf4 1/2-1/2
+
