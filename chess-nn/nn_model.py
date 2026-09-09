@@ -41,7 +41,7 @@ WEIGHT_KEYS = ("acc_w", "acc_b", "l1_w", "l1_b", "out_w", "out_b")
 # PyTorch model (used on the training machine: Colab / Kaggle T4).
 # Imported lazily so this module is usable for weight I/O without torch.
 # ----------------------------------------------------------------------------
-def build_model(out_scale=1.0):
+def build_model(out_scale=1.0, h0=None, h1=None):
     """Build the network. `out_scale` is a FIXED (non-trainable) multiplier on
     the output head.
 
@@ -56,6 +56,9 @@ def build_model(out_scale=1.0):
     """
     import torch
     import torch.nn as nn
+
+    h0 = H0 if h0 is None else int(h0)
+    h1 = H1 if h1 is None else int(h1)
 
     class NNUE(nn.Module):
         def __init__(self, n_features=N_FEATURES, h0=H0, h1=H1, out_scale=1.0):
@@ -72,7 +75,7 @@ def build_model(out_scale=1.0):
             # centipawns, mover-relative
             return self.out(h).squeeze(-1) * self.out_scale
 
-    return NNUE(out_scale=out_scale)
+    return NNUE(h0=h0, h1=h1, out_scale=out_scale)
 
 
 def _atomic_savez(path, arrays):

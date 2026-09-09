@@ -480,7 +480,7 @@ def train(shards_dir, out_path, epochs=30, bs=8192, lr=1e-3,
           scale=DEFAULT_SCALE, lam=1.0, loss="mse", seed=0,
           val_permille=DEFAULT_VAL_PERMILLE,
           test_permille=DEFAULT_TEST_PERMILLE, lr_schedule="none",
-          out_scale=1.0):
+          out_scale=1.0, h0=None, h1=None):
     import torch
     import torch.nn.functional as F
 
@@ -497,7 +497,8 @@ def train(shards_dir, out_path, epochs=30, bs=8192, lr=1e-3,
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device: {device} | K={scale} | lambda(eval)={lam} | loss={loss} | "
           f"seed={seed} | lr={lr} | batch={bs} | epochs={epochs} | "
-          f"lr-schedule={lr_schedule} | out-scale={out_scale}")
+          f"lr-schedule={lr_schedule} | out-scale={out_scale} | "
+          f"h0={h0 or nn_model.H0} h1={h1 or nn_model.H1}")
 
     idx, cnt, y, wdl, keys, groups = _load_shards(shards_dir)
     allowed_wdl = (wdl == WDL_UNKNOWN) | (wdl == 0.0) | (wdl == 0.5) | (wdl == 1.0)
@@ -527,7 +528,7 @@ def train(shards_dir, out_path, epochs=30, bs=8192, lr=1e-3,
             return F.huber_loss(predicted, target, delta=0.1)
         return F.mse_loss(predicted, target)
 
-    model = nn_model.build_model(out_scale=out_scale).to(device)
+    model = nn_model.build_model(out_scale=out_scale, h0=h0, h1=h1).to(device)
     optimiser = torch.optim.Adam(model.parameters(), lr=lr)
     # Optional cosine decay, stepped once per epoch. Defaults to "none" so the
     # handoff's prescribed baseline command reproduces exactly.
@@ -591,6 +592,8 @@ def train(shards_dir, out_path, epochs=30, bs=8192, lr=1e-3,
         "learning_rate": np.float32(lr),
         "lr_schedule": np.array(lr_schedule),
         "out_scale": np.float32(out_scale),
+        "h0": np.int32(h0 if h0 else nn_model.H0),
+        "h1": np.int32(h1 if h1 else nn_model.H1),
     }
     nn_model.export_weights(model, out_path, metadata=metadata)
     print(f"best epoch {best_epoch}: validation RMSE={best_rmse:.5f}; "
@@ -665,6 +668,12 @@ def _build_cli():
     train_parser.add_argument("--test-permille", type=int, default=DEFAULT_TEST_PERMILLE)
     train_parser.add_argument("--lr-schedule", choices=("none", "cosine"), default="none")
     train_parser.add_argument("--output-scale", type=float, default=1.0)
+    train_parser.add_argument("--h0", type=int, default=None,
+                              help="accumulator width (default 256). The runtime "
+                                   "reads layer shapes from the weight file, so a "
+                                   "wider net needs no runtime change.")
+    train_parser.add_argument("--h1", type=int, default=None,
+                              help="hidden width (default 32)")
     return parser
 
 
@@ -680,4 +689,4 @@ if __name__ == "__main__":
         train(args.shards, args.out, args.epochs, args.batch_size,
               args.learning_rate, args.scale, args.lam, args.loss, args.seed,
               args.val_permille, args.test_permille, args.lr_schedule,
-              args.output_scale)
+              args.output_scale, args.h0, args.h1)
