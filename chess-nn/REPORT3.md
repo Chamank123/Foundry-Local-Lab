@@ -150,7 +150,7 @@ slower per node, so at equal time it simply searches shallower.
 
 | Match | Result | Score rate |
 |---|---|---|
-| `net_8m_scale400.npz` vs hand-crafted | **2 – 14** | 12.5% |
+| `net_8m_scale400.npz` vs hand-crafted | 2 – 14 | 12.5% (see section 9 — this was noise) |
 | **`net_8m_scale400.npz` vs `pilot_net_tuned.npz`** | **14.5 – 1.5** | **91%** |
 
 Read those together:
@@ -217,3 +217,126 @@ cd chess-nn
 PYTHONPATH=engine ./.venv/bin/python match.py --nn net_8m_scale400.npz \
     --nn2 pilot_net_tuned.npz --games 16 --depth 5 --base 100000 --inc 0
 ```
+
+
+---
+
+# 9. Second round: longer training, and two hypotheses tested
+
+Added after the 24-epoch cosine run finished. **Correction to section 6: the
+"2 – 14 (12.5%)" figure above was small-sample noise.** Re-measured over 48
+games the best net scores **2.1%**, not 12.5%.
+
+## 9.1 The longer run is the best checkpoint
+
+`net_8m_scale400_cos24.npz` — 24 epochs, batch 256, lr 3e-3, cosine schedule,
+scale-400 head. Best epoch **17 of 24**; validation plateaued around epoch 15
+and drifted up after, so 24 epochs is now past the useful point.
+
+| | val RMSE | test RMSE | yardstick RMSE | Spearman | sign | material slope | material ÷ in-band |
+|---|---|---|---|---|---|---|---|
+| `net_8m_scale400.npz` | 0.14062 | 0.14316 | 0.13692 | 0.725 | 84.7% | 0.377 | 0.68 |
+| **`net_8m_scale400_cos24.npz`** | **0.13735** | **0.13969** | **0.13300** | **0.747** | **86.3%** | **0.513** | **0.87** |
+
+Better on every metric, export parity exact (0/1000 clamped-int rows differ).
+Note the cosine schedule **did** help here, where `REPORT2.md` section 3 found
+it made no difference on the 100k pilot — one more case of the pilot being too
+small to rank configurations.
+
+And it translates into play, which loss alone would not have established:
+
+| Match (fixed depth 5) | Result | Score rate |
+|---|---|---|
+| `cos24` vs `net_8m_scale400` | **31.5 – 16.5** (48 games) | **65.6% ± 6.9%**, CI ≈ [52%, 79%] |
+
+The lower bound sits above 50%, so this is a real improvement.
+
+## 9.2 The gap to the hand-crafted engine, measured properly
+
+| Match (fixed depth 5, 48 games) | Result | Score rate |
+|---|---|---|
+| `cos24` vs hand-crafted | **1 – 47** | **2.1% ± 2.1%**, CI ≈ [0%, 6%] |
+
+So the better checkpoint scores *lower* against the reference than the 16-game
+estimate suggested for the weaker one. Both readings are consistent with "far
+behind"; 16 games simply could not tell 2% from 12%.
+
+**On the uncertainty figures:** these matches are deterministic — fixed depth,
+deterministic search, fixed opening list — so re-running reproduces them exactly.
+The standard errors describe variation across *openings*, not repeat sampling,
+and should be read as a rough guide only.
+
+## 9.3 Hypothesis 1: the eval hangs material — REJECTED
+
+`test_blunder.py`: pick the move minimising the opponent's static eval (1-ply),
+then judge it with a 2-ply capture/recapture swap. 300 quiet, balanced positions,
+with the hand-crafted evaluation through the identical procedure as a control.
+
+| Evaluation | hangs ≥200 cp | mean swing |
+|---|---|---|
+| hand-crafted `evaluate()` | 24.0% | −95.4 cp |
+| `net_8m_scale400_cos24.npz` | **19.3%** | **−77.5 cp** |
+| `pilot_net_tuned.npz` | 20.3% | −94.9 cp |
+
+The net hangs material *less* than the evaluation that beats it 47–1. Tactical
+blindness at the eval level does not explain the gap.
+
+## 9.4 Hypothesis 2: centipawn miscalibration — NOT SUPPORTED
+
+First, a correction to my own reasoning in section 4. I wrote that uniform
+compression is "mostly harmless to search" because scaling an evaluation by a
+positive constant cannot change move ordering. That is true of pure minimax and
+**false of this search**: reverse futility pruning fires on
+`static − 85·depth ≥ beta`, and null-move and aspiration windows are likewise
+denominated in centipawns. Those constants were tuned against an evaluation
+returning true-ish centipawns. The net's in-band slope is 0.591, so every fixed
+margin is effectively ~1.7× wider than intended.
+
+Tested directly with `rescale_net.py`, folding a ×1.69 constant into
+`out_w`/`out_b` — same function class, same export layout, same runtime socket.
+It does what it should to the diagnostics: material slope 0.513 → **0.867**,
+direction accuracy unchanged at 88% (ordering is invariant, as expected).
+
+In play the result is **non-transitive**:
+
+| Match (fixed depth 5) | Result | Score rate |
+|---|---|---|
+| `cos24 ×1.69` vs `cos24` | 5.0 – 27.0 (32 games) | 15.6% ± 6.4% |
+| `cos24 ×1.69` vs hand-crafted | 4.5 – 43.5 (48 games) | 9.4% ± 4.2%, CI ≈ [1%, 18%] |
+
+The rescale is clearly *worse* head to head against the net it came from, while
+scoring nominally higher against the hand-crafted engine — where its CI [1%, 18%]
+still overlaps the original's [0%, 6%]. Taken together that is **not** support
+for the calibration hypothesis, and `cos24` unrescaled remains the recommended
+checkpoint. The rescaled file is kept only as the record of a tested idea.
+
+The principle stands even though the experiment failed: a cp-denominated pruning
+margin does interact with evaluation scale, so anyone retuning this search with a
+network evaluation should treat those constants as tunable rather than fixed.
+
+## 9.5 Where this leaves things
+
+Two plausible explanations tested, neither supported. The remaining candidates,
+untested here:
+
+* **Distribution mismatch.** The net is trained on Lichess analysis positions;
+  a search evaluates leaves that are frequently unbalanced, mid-tactic, and
+  nothing like the training distribution. This is exactly what the original
+  handoff anticipated with "positions reached by our engine labelled using a
+  fixed Stockfish setup", and it is now the single most promising direction.
+* **Capacity.** H0/H1 are 256/32. Small for 7.8M training rows.
+* **Search interaction beyond scale** — move ordering, TT scores and quiescence
+  all assume evaluation behaviour the net may not have.
+
+**Status unchanged: not a deployment candidate. Keep the hand-crafted engine.**
+`net_8m_scale400_cos24.npz` is the best checkpoint and the one to carry forward.
+
+## 9.6 Files added this round
+
+| File | What it is |
+|---|---|
+| `net_8m_scale400_cos24.npz` | **Best checkpoint.** 24-epoch cosine, best epoch 17 |
+| `net_8m_cos24_x17.npz` | ×1.69 output rescale; tested, not recommended |
+| `test_blunder.py` | 1-ply material-hanging probe with hand-crafted control |
+| `rescale_net.py` | Folds a constant into `out_w`/`out_b` |
+| `match.py` | Now 24 openings and reports score-rate uncertainty |

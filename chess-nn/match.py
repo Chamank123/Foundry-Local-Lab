@@ -21,6 +21,11 @@ import chess
 OPENINGS = [
     "e2e4 e7e5", "d2d4 d7d5", "e2e4 c7c5", "d2d4 g8f6",
     "c2c4 e7e5", "g1f3 d7d5", "e2e4 e7e6", "d2d4 d7d5 c2c4 c7c6",
+    "e2e4 c7c6", "d2d4 g8f6 c2c4 e7e6", "e2e4 d7d5", "d2d4 e7e6",
+    "c2c4 g8f6", "g1f3 g8f6", "e2e4 d7d6", "d2d4 d7d5 g1f3 g8f6",
+    "e2e4 g8f6", "d2d4 f7f5", "c2c4 c7c5", "e2e4 b8c6",
+    "d2d4 g8f6 c2c4 g7g6", "e2e4 e7e5 g1f3 b8c6", "d2d4 d7d5 c2c4 e7e6",
+    "e2e4 c7c5 g1f3 d7d6",
 ]
 
 
@@ -147,9 +152,16 @@ if __name__ == "__main__":
     nn.close()
     hc.close()
     played = score["nn"] + score["hc"]
+    rate = score["nn"] / played
+    # Binomial standard error on the score rate. With a few dozen games this is
+    # wide, and it is the reason a small match can only separate "clearly worse"
+    # from "clearly better".
+    stderr = (rate * (1.0 - rate) / played) ** 0.5
     opponent = args.nn2 if args.nn2 else "hand-crafted"
     print(f"\n{args.nn} {score['nn']} - {score['hc']} {opponent}  ({played:.0f} games)")
-    print(f"NN score rate: {score['nn'] / played * 100:.0f}%")
+    print(f"score rate: {rate * 100:.1f}% +- {stderr * 100:.1f}% (1 s.e.), "
+          f"95% CI roughly [{max(0.0, rate - 2 * stderr) * 100:.0f}%, "
+          f"{min(1.0, rate + 2 * stderr) * 100:.0f}%]")
     flags = [i for i in issues if "FLAG" in i or "ILLEGAL" in i or "crash" in i]
     print(f"illegal moves / flags / crashes: {len(flags)}"
           + (f" -> {flags}" if flags else ""))
