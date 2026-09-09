@@ -25,9 +25,11 @@ OPENINGS = [
 
 
 class Worker:
-    def __init__(self, weights, label):
+    def __init__(self, weights, label, depth=0):
         self.label = label
         cmd = [sys.executable, "match_worker.py"] + ([weights] if weights else [])
+        if depth:
+            cmd += ["--depth", str(depth)]
         started = time.perf_counter()
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                      stdout=subprocess.PIPE, text=True, bufsize=1)
@@ -77,7 +79,7 @@ def play(white, black, opening, base_s, inc_s, max_plies=200):
             return ("0-1" if side == chess.WHITE else "1-0"), [f"crash: {exc}"]
         spent = time.perf_counter() - started
         clock[side] -= spent
-        if clock[side] < 0:
+        if inc_s >= 0 and base_s > 0 and clock[side] < 0:
             return ("0-1" if side == chess.WHITE else "1-0"), ["FLAG (time forfeit)"]
         clock[side] += inc_s
         try:
@@ -95,16 +97,26 @@ def play(white, black, opening, base_s, inc_s, max_plies=200):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--nn", required=True)
+    parser.add_argument("--nn2", default=None,
+                        help="oppose two networks instead of NN vs hand-crafted")
     parser.add_argument("--games", type=int, default=8)
     parser.add_argument("--base", type=float, default=5.0, help="seconds per side")
     parser.add_argument("--inc", type=float, default=0.1)
+    parser.add_argument("--depth", type=int, default=0,
+                        help="fixed-depth match: ignore the clock, give both "
+                             "sides this depth, isolating eval quality from speed")
     args = parser.parse_args()
 
-    print(f"clock: {args.base}s + {args.inc}s/move  (NOT the competition control "
-          f"unless it matches the verified configuration)")
+    if args.depth:
+        print(f"FIXED DEPTH {args.depth} for both sides: no clock, so this measures "
+              f"evaluation quality with the speed handicap removed. It is a "
+              f"diagnostic, not a competition result.")
+    else:
+        print(f"clock: {args.base}s + {args.inc}s/move  (NOT the competition control "
+              f"unless it matches the verified configuration)")
     print("starting engines ...")
-    nn = Worker(args.nn, f"NN({args.nn})")
-    hc = Worker(None, "hand-crafted")
+    nn = Worker(args.nn, f"NN({args.nn})", args.depth)
+    hc = Worker(args.nn2, f"NN({args.nn2})" if args.nn2 else "hand-crafted", args.depth)
 
     score = {"nn": 0.0, "hc": 0.0}
     issues = []
@@ -135,7 +147,8 @@ if __name__ == "__main__":
     nn.close()
     hc.close()
     played = score["nn"] + score["hc"]
-    print(f"\nNN {score['nn']} - {score['hc']} hand-crafted  ({played:.0f} games)")
+    opponent = args.nn2 if args.nn2 else "hand-crafted"
+    print(f"\n{args.nn} {score['nn']} - {score['hc']} {opponent}  ({played:.0f} games)")
     print(f"NN score rate: {score['nn'] / played * 100:.0f}%")
     flags = [i for i in issues if "FLAG" in i or "ILLEGAL" in i or "crash" in i]
     print(f"illegal moves / flags / crashes: {len(flags)}"
