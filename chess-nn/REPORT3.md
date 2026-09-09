@@ -340,3 +340,97 @@ untested here:
 | `test_blunder.py` | 1-ply material-hanging probe with hand-crafted control |
 | `rescale_net.py` | Folds a constant into `out_w`/`out_b` |
 | `match.py` | Now 24 openings and reports score-rate uncertainty |
+
+
+---
+
+# 10. Third round: bigger net, all data, trained to convergence
+
+Requested: keep training on a bigger net until all the training data is used.
+
+**On "all the training data":** every epoch was already a full pass over all
+7,840,256 training rows. The remaining 159,744 are the validation and test
+splits and must stay unused. There is no unused data in this snapshot — the
+collector stopped at its 8,000,000 limit. So this round adds **capacity** and
+**training to convergence**, not data.
+
+## 10.1 Width is supported, and expensive
+
+`nn_model.py` claimed changing H0/H1 needs no other edits because the runtime
+reads layer shapes from the weight file. That is now exercised rather than
+assumed: `--h0/--h1` were added, and at 512×64 the exported checkpoint runs
+through `load_weights` and the numba `nn_forward` agreeing with numpy to
+1.04e-05 cp and PyTorch to 1.14e-05 cp. numba types weight arrays by
+dtype/rank/contiguity, not shape, so a wider net needs no recompile.
+
+The cost is steep, because the `l1` layer is a dense h0×h1 multiply while the
+accumulator is sparse:
+
+| width | params | evals/sec (one core) | vs 256×32 |
+|---|---|---|---|
+| 256×32 | 207,904 | 157,811 | baseline |
+| **512×64** | **432,192** | **43,954** | **3.6× slower** |
+| 768×64 | 648,256 | 30,276 | 5.2× slower |
+| 1024×128 | 929,920 | 12,382 | 12.7× slower |
+
+1024×128 is not viable for a timed engine, so 512×64 was the size tried.
+
+## 10.2 It converged, and it did not help
+
+`net_8m_512x64.npz` — 30 epochs, cosine, scale-400 head. **Best epoch 19 of 30**,
+validation rising steadily afterwards, so this is converged, not cut short.
+
+| | val | test | yardstick RMSE | Spearman | sign | material slope | direction |
+|---|---|---|---|---|---|---|---|
+| `net_8m_scale400_cos24.npz` (256×32) | 0.13735 | 0.13969 | **0.13300** | **0.747** | **86.3%** | **0.513** | **88%** |
+| `net_8m_512x64.npz` (512×64) | **0.13662** | **0.13856** | 0.13285 | 0.741 | 85.8% | 0.451 | 76% |
+
+It wins its own validation number by 0.5% and is **tied** on the common
+yardstick (0.13285 vs 0.13300), while being worse on every metric that has
+tracked play: material slope, direction accuracy, Spearman, sign agreement.
+Export parity passes at both widths.
+
+And in play, at equal depth so the 3.6× speed penalty is excluded entirely:
+
+| Match (fixed depth 5, 48 games) | Result | Score rate |
+|---|---|---|
+| `net_8m_512x64` vs `net_8m_scale400_cos24` | **19.5 – 28.5** | 40.6% ± 7.1%, CI ≈ [26%, 55%] |
+
+The interval includes 50%, so this is not proof the wider net is worse. It is
+solid evidence it is **not better** — and it costs 3.6× per evaluation, which on
+a real clock is a large loss of depth. **Capacity is not the bottleneck.**
+
+## 10.3 What three rounds of tuning say
+
+At 8M rows, four levers have now been tried:
+
+| Lever | Effect |
+|---|---|
+| **More data** (100k → 8M) | **Large win.** 91% head-to-head vs the pilot net |
+| **Longer training + cosine** | **Real win.** 65.6% head-to-head, CI above 50% |
+| Output-scale head | Small win at 8M; the pilot-scale contradiction vanished |
+| cp rescale (×1.69) | No win; non-transitive |
+| **More capacity** (2.1× params) | **No win**, at 3.6× the cost |
+
+Loss keeps improving in small increments while the standing against the
+hand-crafted engine does not move. Every remaining lever inside "train the same
+network on the same distribution" has now given diminishing or zero returns.
+That is itself the finding: **the ceiling here is the training distribution, not
+the optimiser, the schedule, the output parameterisation, or the model size.**
+
+The net is trained on Lichess *analysis* positions. A search spends its time on
+leaves that are unbalanced, mid-tactic, and unlike anything in that set. This is
+what the original handoff anticipated with "positions reached by our engine
+labelled using a fixed Stockfish setup", and after this round it is the only
+major untested hypothesis left.
+
+## 10.4 Recommendation
+
+**`net_8m_scale400_cos24.npz` (256×32) remains the best checkpoint** — equal on
+loss, better on every play-correlated metric, better head-to-head, and 3.6×
+faster. Keep the hand-crafted engine as the submission.
+
+Do not spend more effort on width, schedule or output parameterisation on this
+dataset. The next experiment worth running is a dataset one: label
+engine-reached positions with a fixed Stockfish setup and mix them in, then
+re-run this same gate.
